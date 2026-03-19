@@ -107,6 +107,274 @@ $$\frac{\partial C}{\partial w} = \frac{\partial C}{\partial a} \cdot \frac{\par
 
 $$\frac{\partial C}{\partial b} = \frac{\partial C}{\partial a} \cdot \frac{\partial a}{\partial z} \cdot \frac{\partial z}{\partial b}$$
 
+### Intuición mecánica: la regla de la cadena como engranajes
+
+La regla de la cadena puede entenderse con una analogía mecánica: imagina una **cadena de engranajes** donde cada función es un engranaje conectado al siguiente. Si giras el engranaje de entrada ($x$), el movimiento se transmite al engranaje intermedio ($y = g(x)$) y de ahí al de salida ($z = f(y)$).
+
+La **razón de transmisión** entre engranajes es exactamente la **derivada**: indica cuánto se amplifica o reduce el movimiento en cada etapa. La regla de la cadena dice que el efecto total es el **producto** de las razones parciales:
+
+$$\frac{dz}{dx} = \frac{dz}{dy} \cdot \frac{dy}{dx}$$
+
+La siguiente visualización interactiva permite explorar esta analogía. Usa el slider o el botón **Play** para observar cómo un movimiento en $x$ se propaga a través de $g$ y $f$.
+
+```{python}
+#| label: fig-engranajes-cadena
+#| fig-cap: "Analogía mecánica de la regla de la cadena: z = (f ∘ g)(x)"
+#| echo: false
+
+import numpy as np
+import plotly.graph_objects as go
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Geometría de engranajes
+# ═══════════════════════════════════════════════════════════════════
+
+def gear_outline(cx, cy, n_teeth, r_pitch, tooth_h, rotation=0, npts=500):
+    """Contorno de un engranaje con perfil trapezoidal suavizado."""
+    theta = np.linspace(0, 2 * np.pi, npts, endpoint=True)
+    wave = np.clip(2.5 * np.sin(n_teeth * (theta - rotation)), -1, 1)
+    r = r_pitch + tooth_h * wave
+    return cx + r * np.cos(theta), cy + r * np.sin(theta)
+
+
+def hub_circle(cx, cy, r_hub, npts=50):
+    """Pequeño círculo central (eje del engranaje)."""
+    theta = np.linspace(0, 2 * np.pi, npts, endpoint=True)
+    return cx + r_hub * np.cos(theta), cy + r_hub * np.sin(theta)
+
+
+def marker_line(cx, cy, r_pitch, angle):
+    """Línea radial que indica la posición angular actual."""
+    r_end = r_pitch * 0.82
+    return ([cx, cx + r_end * np.cos(angle)],
+            [cy, cy + r_end * np.sin(angle)])
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Visualización principal
+# ═══════════════════════════════════════════════════════════════════
+
+def crear_visualizacion():
+    """
+    Tres engranajes representando z = f(g(x)).
+
+    Engranaje x  : 10 dientes, r = 1.5  (entrada)
+    Engranaje g  : 15 dientes, r = 2.25 (intermedio, y = g(x))
+    Engranaje f  : 20 dientes, r = 3.0  (salida, z = f(y))
+
+    Razones de transmisión (análogas a derivadas):
+        dy/dx = n₁/n₂ = 10/15 = 2/3
+        dz/dy = n₂/n₃ = 15/20 = 3/4
+        dz/dx = dy/dx × dz/dy = 2/3 × 3/4 = 1/2
+    """
+
+    # ── Parámetros de los engranajes ──
+    n1, n2, n3 = 10, 15, 20           # dientes
+    pitch_k = 0.15                     # r = pitch_k × n
+    r1, r2, r3 = pitch_k * n1, pitch_k * n2, pitch_k * n3
+    tooth_h = 0.12                     # altura del diente
+
+    # Centros (alineados horizontalmente, tangentes en los radios primitivos)
+    cx1, cy1 = 0.0, 0.0
+    cx2, cy2 = r1 + r2, 0.0
+    cx3, cy3 = cx2 + r2 + r3, 0.0
+
+    # Razones de transmisión
+    ratio_12 = n1 / n2    # dy/dx = 2/3
+    ratio_23 = n2 / n3    # dz/dy = 3/4
+    ratio_13 = n1 / n3    # dz/dx = 1/2
+
+    # Colores: (línea, relleno, hub)
+    COLORS = {
+        'x': ('darkorange',  'rgba(255,165,0,0.20)',  'rgba(255,165,0,0.55)'),
+        'g': ('royalblue',   'rgba(65,105,225,0.20)', 'rgba(65,105,225,0.55)'),
+        'f': ('seagreen',    'rgba(46,139,87,0.20)',  'rgba(46,139,87,0.55)'),
+    }
+    keys = ['x', 'g', 'f']
+    cxs  = [cx1, cx2, cx3]
+    cys  = [cy1, cy2, cy3]
+    rs   = [r1, r2, r3]
+    ns   = [n1, n2, n3]
+
+    # ── Funciones auxiliares ──
+
+    def calc_rotations(theta):
+        """Ángulos de rotación de los tres engranajes para un θ de entrada."""
+        rot1 = theta
+        rot2 = -theta * ratio_12 + np.pi / n2   # opuesto + offset engrane 1↔2
+        rot3 = theta * ratio_13 + np.pi / n3    # mismo sentido + offset engrane 2↔3
+        return rot1, rot2, rot3
+
+    def build_data(theta):
+        """Genera las coordenadas de los 9 elementos gráficos."""
+        rots = calc_rotations(theta)
+        items = []
+        for i in range(3):
+            gx, gy = gear_outline(cxs[i], cys[i], ns[i], rs[i], tooth_h, rots[i])
+            items.append((gx, gy))
+        for i in range(3):
+            mx, my = marker_line(cxs[i], cys[i], rs[i], rots[i])
+            items.append((mx, my))
+        for i in range(3):
+            hx, hy = hub_circle(cxs[i], cys[i], rs[i] * 0.14)
+            items.append((hx, hy))
+        return items
+
+    def build_annotations(theta):
+        """Anotaciones dinámicas: vueltas de cada engranaje.
+
+        Nota: NO usar $...$ (MathJax) dentro de Plotly en Quarto,
+        porque Quarto intercepta el MathJax y rompe el widget.
+        Usar HTML + Unicode en su lugar.
+        """
+        vx = theta / (2 * np.pi)
+        vy = theta * ratio_12 / (2 * np.pi)
+        vz = theta * ratio_13 / (2 * np.pi)
+        return [
+            dict(x=cx1, y=-r1 - 0.65, xref='x', yref='y',
+                 text=f"<b><i>x</i></b><br>{vx:.2f} vueltas",
+                 showarrow=False, font=dict(size=14, color='darkorange'),
+                 align='center'),
+            dict(x=cx2, y=-r2 - 0.65, xref='x', yref='y',
+                 text=f"<b><i>y</i> = <i>g</i>(<i>x</i>)</b><br>{vy:.2f} vueltas",
+                 showarrow=False, font=dict(size=14, color='royalblue'),
+                 align='center'),
+            dict(x=cx3, y=-r3 - 0.65, xref='x', yref='y',
+                 text=f"<b><i>z</i> = <i>f</i>(<i>y</i>)</b><br>{vz:.2f} vueltas",
+                 showarrow=False, font=dict(size=14, color='seagreen'),
+                 align='center'),
+            dict(x=cx1, y=r1 + 0.55, xref='x', yref='y',
+                 text=f"<i>{n1} dientes</i>",
+                 showarrow=False, font=dict(size=11, color='gray')),
+            dict(x=cx2, y=r2 + 0.55, xref='x', yref='y',
+                 text=f"<i>{n2} dientes</i>",
+                 showarrow=False, font=dict(size=11, color='gray')),
+            dict(x=cx3, y=r3 + 0.55, xref='x', yref='y',
+                 text=f"<i>{n3} dientes</i>",
+                 showarrow=False, font=dict(size=11, color='gray')),
+            dict(x=(cx1 + cx3) / 2, y=-r3 - 2.0, xref='x', yref='y',
+                 text=("<b>Regla de la cadena:</b><br>"
+                       "<i>dz/dx</i> = <i>dz/dy</i> · <i>dy/dx</i>"
+                       f" = ({n2}/{n3}) · ({n1}/{n2})"
+                       f" = <b>{n1}/{n3} = {ratio_13:.1f}</b>"),
+                 showarrow=False, font=dict(size=13),
+                 bgcolor='lightyellow', bordercolor='gray',
+                 borderwidth=1, borderpad=8, align='center'),
+            dict(x=(cx1 + cx3) / 2, y=-r3 - 3.5, xref='x', yref='y',
+                 text=("¿Cuánto debe girar <b><i>x</i></b> para que "
+                       "<b><i>z</i></b> dé <b>¼ de vuelta</b>?<br>"
+                       "Respuesta: <i>θ<sub>x</sub></i> = (¼) ÷ (½) = "
+                       "<b>½ vuelta</b>"),
+                 showarrow=False, font=dict(size=12),
+                 bgcolor='rgba(255,228,196,0.5)', bordercolor='darkorange',
+                 borderwidth=1, borderpad=6, align='center'),
+        ]
+
+    # ── Crear la figura ──
+    fig = go.Figure()
+
+    init = build_data(0)
+    labels = ['x (entrada)', 'y = g(x)', 'z = f(y)']
+
+    for i, key in enumerate(keys):
+        line_c, fill_c, _ = COLORS[key]
+        fig.add_trace(go.Scatter(
+            x=init[i][0], y=init[i][1], fill='toself',
+            fillcolor=fill_c, line=dict(color=line_c, width=1.5),
+            name=labels[i], hoverinfo='skip'))
+
+    for i, key in enumerate(keys):
+        fig.add_trace(go.Scatter(
+            x=init[3 + i][0], y=init[3 + i][1], mode='lines',
+            line=dict(color=COLORS[key][0], width=4),
+            showlegend=False, hoverinfo='skip'))
+
+    for i, key in enumerate(keys):
+        fig.add_trace(go.Scatter(
+            x=init[6 + i][0], y=init[6 + i][1], fill='toself',
+            fillcolor=COLORS[key][2],
+            line=dict(color=COLORS[key][0], width=1),
+            showlegend=False, hoverinfo='skip'))
+
+    # ── Frames de animación ──
+    n_steps = 100
+    max_turns = 2.0
+    thetas = np.linspace(0, max_turns * 2 * np.pi, n_steps)
+
+    frames = []
+    for idx, theta in enumerate(thetas):
+        d = build_data(theta)
+        frame_traces = []
+        for i in range(9):
+            frame_traces.append(go.Scatter(x=d[i][0], y=d[i][1]))
+        frames.append(go.Frame(
+            data=frame_traces,
+            name=str(idx),
+            layout=go.Layout(annotations=build_annotations(theta))
+        ))
+    fig.frames = frames
+
+    # ── Slider ──
+    slider_steps = []
+    for idx, theta in enumerate(thetas):
+        vx = theta / (2 * np.pi)
+        slider_steps.append(dict(
+            args=[[str(idx)], dict(
+                mode="immediate",
+                frame=dict(duration=0, redraw=True),
+                transition=dict(duration=0))],
+            label=f"{vx:.2f}",
+            method="animate"))
+
+    # ── Botones Play / Pausa ──
+    updatemenus = [dict(
+        type="buttons", showactive=False,
+        y=-0.12, x=0.08, xanchor="right",
+        buttons=[
+            dict(label="▶ Play", method="animate",
+                 args=[None, dict(
+                     frame=dict(duration=80, redraw=True),
+                     fromcurrent=True,
+                     transition=dict(duration=0))]),
+            dict(label="⏸ Pausa", method="animate",
+                 args=[[None], dict(
+                     frame=dict(duration=0, redraw=True),
+                     mode="immediate",
+                     transition=dict(duration=0))])])]
+
+    # ── Layout ──
+    fig.update_layout(
+        title=dict(
+            text="<b><i>z</i> = (<i>f</i> ∘ <i>g</i>)(<i>x</i>)</b> — La regla de la cadena como engranajes",
+            font=dict(size=18), x=0.5),
+        sliders=[dict(
+            active=0,
+            currentvalue=dict(
+                prefix="Rotación de x: ", suffix=" vueltas",
+                font=dict(size=13)),
+            pad=dict(t=60), steps=slider_steps,
+            len=0.82, x=0.12)],
+        updatemenus=updatemenus,
+        xaxis=dict(
+            scaleanchor="y", scaleratio=1,
+            showgrid=False, zeroline=False, visible=False,
+            range=[-2.5, cx3 + r3 + 1.5]),
+        yaxis=dict(
+            showgrid=False, zeroline=False, visible=False,
+            range=[-r3 - 5.0, r3 + 1.5]),
+        width=950, height=750,
+        plot_bgcolor='white', paper_bgcolor='white',
+        legend=dict(x=0.82, y=1.0, font=dict(size=12)),
+        annotations=build_annotations(0),
+    )
+
+    return fig
+
+
+crear_visualizacion().show()
+```
+
 ## 3.2 Grafo computacional
 
 La siguiente figura muestra la estructura general de una **neurona artificial** con $n$ entradas $x_0, x_1, \ldots, x_n$, sus pesos $w_0, w_1, \ldots, w_n$, la suma ponderada $z = \mathbf{w}^\top \mathbf{x}$ y la función de activación $\sigma(z)$ que produce la salida $\hat{y}$.
@@ -254,7 +522,7 @@ tikz_code = r"""
 
 \begin{document}
 \begin{tikzpicture}[
-    scale=1.8, transform shape,
+    scale=1.3, transform shape,
     >=LaTeX,
     var/.style={circle, minimum width=2.5em, draw=orange!60!black,
                 fill=orange!20, thick, font=\large},
@@ -272,35 +540,37 @@ tikz_code = r"""
     fwlabel/.style={font=\small, black}
 ]
 
-% --- Rama superior: x1, w1 → (·) → p1 ---
-\node[var] (x1)   at (0,    3.5)  {$x_1$};
-\node[var] (w1)   at (3.5,  3.5)  {$w_1$};
-\node[op]  (mul1) at (7.0,  3.5)  {$\cdot$};
-\node[var] (p1)   at (10.0, 3.5)  {$p_1$};
+% === NODOS ===
+% Fila 1 (y=2.8): x1, w1 → · → p1
+\node[var] (x1)   at (0,    2.8)  {$x_1$};
+\node[var] (w1)   at (2.5,  2.8)  {$w_1$};
+\node[op]  (mul1) at (5,    2.8)  {$\cdot$};
+\node[var] (p1)   at (7,    2.8)  {$p_1$};
 
-% --- Rama inferior: x2, w2 → (·) → p2 ---
+% Fila 2 (y=0): x2, w2 → · → p2 → + → z → σ → a
 \node[var] (x2)   at (0,    0)    {$x_2$};
-\node[var] (w2)   at (3.5,  0)    {$w_2$};
-\node[op]  (mul2) at (7.0,  0)    {$\cdot$};
-\node[var] (p2)   at (10.0, 0)    {$p_2$};
+\node[var] (w2)   at (2.5,  0)    {$w_2$};
+\node[op]  (mul2) at (5,    0)    {$\cdot$};
+\node[var] (p2)   at (7,    0)    {$p_2$};
+\node[op]  (add)  at (9.5,  0)    {$+$};
+\node[var] (z)    at (11.5, 0)    {$z$};
+\node[op]  (sig)  at (13.5, 0)    {$\sigma$};
+\node[var] (a)    at (15.5, 0)    {$a$};
 
-% --- Flujo central: + → z → σ → a → − → u → (·)² → C ---
-\node[op]  (add)  at (13.0, 0)    {$+$};
-\node[var] (z)    at (16.0, 0)    {$z$};
-\node[op]  (sig)  at (19.0, 0)    {$\sigma$};
-\node[var] (a)    at (22.0, 0)    {$a$};
-\node[op]  (sub)  at (25.0, 0)    {$-$};
-\node[var] (u)    at (28.0, 0)    {$u$};
-\node[op]  (sq)   at (31.0, 0)    {$(\cdot)^2$};
-\node[res] (C)    at (34.0, 0)    {$C$};
+% Fila 3 (y=-2.8): bias
+\node[var] (b)    at (2.5, -2.8)  {$b$};
 
-% --- Fila inferior: b ---
-\node[var] (b)    at (3.5, -3.0)  {$b$};
+% Etiqueta verdadera (entre filas)
+\node[target] (y) at (13.5, -3.5) {$y$};
 
-% --- Etiqueta verdadera ---
-\node[target] (y) at (25.0, 3.0)  {$y$};
+% Fila costo (y=-6.5): − → u → (·)² → C
+\node[op]  (sub)  at (13.5, -6.5) {$-$};
+\node[var] (u)    at (16,   -6.5) {$u$};
+\node[op]  (sq)   at (18.5, -6.5) {$(\cdot)^2$};
+\node[res] (C)    at (20.5, -6.5) {$C$};
 
 % === FORWARD PASS ===
+% Entradas → multiplicaciones
 \draw[arrow] (x1.east) -- (mul1.west);
 \draw[arrow] (w1.east) -- (mul1.west);
 \draw[arrow] (x2.east) -- (mul2.west);
@@ -312,22 +582,22 @@ tikz_code = r"""
 \draw[arrow] (mul2.east) -- (p2.west)
     node[midway, above, fwlabel] {$p_2{=}x_2 w_2$};
 
-% Productos intermedios + b → suma
-\draw[arrow] (p1.east) to[out=0, in=130]
-    (add.north west);
+% Productos + b → suma
+\draw[arrow] (p1.east) to[out=0, in=130] (add.north west);
 \draw[arrow] (p2.east) -- (add.west);
-\draw[arrow] (b.east) to[out=0, in=-130]
-    (add.south west);
+\draw[arrow] (b.east) to[out=0, in=-130] (add.south west);
 
-% Suma → z → sigmoide → a
+% Suma → z → σ → a
 \draw[arrow] (add.east) -- (z.west)
     node[midway, above, fwlabel] {$z{=}p_1{+}p_2{+}b$};
 \draw[arrow] (z.east) -- (sig.west);
 \draw[arrow] (sig.east) -- (a.west)
     node[midway, above, fwlabel] {$a{=}\sigma(z)$};
 
-% a → resta ← y
-\draw[arrow] (a.east) -- (sub.west);
+% a → resta (curva bajando a fila costo)
+\draw[arrow] (a.south) to[out=-90, in=30] (sub.north east);
+
+% y → resta
 \draw[arrow] (y.south) -- (sub.north);
 
 % resta → u → (·)² → C
@@ -341,79 +611,77 @@ tikz_code = r"""
 % [1] C → (·)²
 \draw[backprop] ([yshift=-6pt]C.south west) -- ([yshift=-6pt]sq.south east)
     node[midway, below=5pt, bplabel]
-    {};
+    {$\partial C/\partial u = 2u$};
 
-% [2] (·)² → −
+% [2] (·)² → −  (continuación)
 \draw[backprop] ([yshift=-6pt]sq.south west) -- ([yshift=-6pt]sub.south east)
-    node[midway, below=5pt, bplabel]
-    {$\partial C / \partial(a{-}y) = 2u$};
+    node[midway, below=5pt, bplabel] {};
 
-% [3] − → a
-\draw[backprop] ([yshift=-6pt]sub.south west) -- ([yshift=-6pt]a.south east)
-    node[midway, below=5pt, bplabel]
-    {$\partial C / \partial a = 2u \cdot 1 = 2(a{-}y)$};
+% [3] − → a (curva subiendo a fila 2)
+\draw[backprop] (sub.north west) to[out=150, in=-70]
+    node[bplabel, left=4pt, pos=0.5]
+    {$\partial C/\partial a = 2(a{-}y)$}
+    (a.south west);
 
 % [4] − → y
-\draw[backprop] (sub.north east) to[out=50, in=-50]
-    node[bplabel, right=4pt, pos=0.5]
-    {$\partial C / \partial y = 2u \cdot(-1)$}
-    (y.south east);
+\draw[backprop] ([xshift=5pt]sub.north) -- ([xshift=5pt]y.south)
+    node[midway, right=3pt, bplabel]
+    {$\partial C/\partial y = 2u \cdot({-}1)$};
 
 % [5] a → σ
 \draw[backprop] ([yshift=-6pt]a.south west) -- ([yshift=-6pt]sig.south east)
-    node[midway, below=5pt, bplabel]
-    {};
+    node[midway, below=5pt, bplabel] {};
 
-% [6] σ → z → +
+% [6] σ → + (a través de z)
 \draw[backprop] ([yshift=-6pt]sig.south west) -- ([yshift=-6pt]add.south east)
     node[midway, below=5pt, bplabel]
-    {$\partial C / \partial z = (\partial C / \partial a)\cdot\sigma'(z)$};
+    {$\partial C/\partial z = (\partial C/\partial a)\cdot\sigma'(z)$};
 
 % [7] + → p1 (curva subiendo)
 \draw[backprop] (add.north) to[out=130, in=-10]
     node[bplabel, above=3pt, pos=0.5]
-    {$\partial C / \partial p_1 = \partial C / \partial z \cdot 1$}
+    {$\partial C/\partial p_1 = \partial C/\partial z \cdot 1$}
     (p1.east);
 
 % [8] + → p2 (directo por arriba)
 \draw[backprop] ([yshift=6pt]add.west) -- ([yshift=6pt]p2.east)
     node[midway, above=4pt, bplabel]
-    {$\partial C / \partial p_2 = \partial C / \partial z \cdot 1$};
+    {$\partial C/\partial p_2 = \partial C/\partial z \cdot 1$};
 
 % [9] + → b (curva bajando)
 \draw[backprop] (add.south) to[out=-130, in=10]
     node[bplabel, below=3pt, pos=0.5]
-    {$\partial C / \partial b = \partial C / \partial z \cdot 1$}
+    {$\partial C/\partial b = \partial C/\partial z \cdot 1$}
     (b.east);
 
 % [10] p1 → (·)1
 \draw[backprop] (p1.west) -- (mul1.east);
 
-% [11] (·)1 → w1 (curva suave por arriba)
+% [11] (·)1 → w1 (curva por arriba)
 \draw[backprop] (mul1.north west) to[out=150, in=30]
     node[bplabel, above=4pt, pos=0.5]
-    {$\partial C / \partial w_1 = (\partial C / \partial p_1)\cdot x_1$}
+    {$\partial C/\partial w_1 = (\partial C/\partial p_1)\cdot x_1$}
     (w1.north east);
 
-% [12] (·)1 → x1 (curva suave por abajo)
+% [12] (·)1 → x1 (curva por abajo)
 \draw[backprop] (mul1.south west) to[out=-150, in=-30]
     node[bplabel, below=4pt, pos=0.5]
-    {$\partial C / \partial x_1 = (\partial C / \partial p_1)\cdot w_1$}
+    {$\partial C/\partial x_1 = (\partial C/\partial p_1)\cdot w_1$}
     (x1.south east);
 
 % [13] p2 → (·)2
 \draw[backprop] (p2.west) -- (mul2.east);
 
-% [14] (·)2 → w2 (curva suave por arriba)
+% [14] (·)2 → w2 (curva por arriba)
 \draw[backprop] (mul2.north west) to[out=150, in=30]
     node[bplabel, above=4pt, pos=0.5]
-    {$\partial C / \partial w_2 = (\partial C / \partial p_2)\cdot x_2$}
+    {$\partial C/\partial w_2 = (\partial C/\partial p_2)\cdot x_2$}
     (w2.north east);
 
-% [15] (·)2 → x2 (curva suave por abajo)
+% [15] (·)2 → x2 (curva por abajo)
 \draw[backprop] (mul2.south west) to[out=-150, in=-30]
     node[bplabel, below=4pt, pos=0.5]
-    {$\partial C / \partial x_2 = (\partial C / \partial p_2)\cdot w_2$}
+    {$\partial C/\partial x_2 = (\partial C/\partial p_2)\cdot w_2$}
     (x2.south east);
 
 \end{tikzpicture}
@@ -439,7 +707,7 @@ with tempfile.TemporaryDirectory() as tmpdir:
     )
     shutil.copy(os.path.join(tmpdir, "grafo_out.png"), png_out)
 
-display(Image(filename="grafo_computacional.png", width=1100))
+display(Image(filename="grafo_computacional.png", width=900))
 ```
 
 ::: {.callout-note}
