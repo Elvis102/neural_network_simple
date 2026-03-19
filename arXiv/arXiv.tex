@@ -1,0 +1,1427 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  super,
+  preprint,
+  3p]{elsarticle}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{5}
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\journal{Journal Name}
+
+\usepackage[]{natbib}
+\bibliographystyle{elsarticle-num}
+\usepackage{bookmark}
+
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Regresión logística un ejemplo para la predicción de infartos},
+  pdfauthor={Alice Anonymous; Bob Security; Cat Memes; Derek Zoolander},
+  pdfkeywords={keyword1, keyword2},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\setlength{\parindent}{6pt}
+\begin{document}
+
+\begin{frontmatter}
+\title{Regresión logística un ejemplo para la predicción de infartos}
+\author[1]{Alice Anonymous%
+\corref{cor1}%
+\fnref{fn1}}
+ \ead{alice@example.com} 
+\author[2]{Bob Security%
+%
+\fnref{fn2}}
+ \ead{bob@example.com} 
+\author[2]{Cat Memes%
+%
+\fnref{fn3}}
+ \ead{cat@example.com} 
+\author[]{Derek Zoolander%
+%
+}
+ \ead{derek@example.com} 
+
+\affiliation[1]{organization={Some Institute of Technology, Department
+Name},addressline={Street Address},city={City},postcode={Postal
+Code},postcodesep={}}
+\affiliation[2]{organization={Another University, Department
+Name},addressline={Street Address},city={City},postcode={Postal
+Code},postcodesep={}}
+
+\cortext[cor1]{Corresponding author}
+\fntext[fn1]{This is the first author footnote.}
+\fntext[fn2]{Another author footnote, this is a very long footnote and
+it should be a really long footnote. But this footnote is not yet
+sufficiently long enough to make two lines of footnote text.}
+\fntext[fn3]{Yet another author footnote.}
+
+        
+\begin{abstract}
+This is the abstract. Lorem ipsum dolor sit amet, consectetur adipiscing
+elit. Vestibulum augue turpis, dictum non malesuada a, volutpat eget
+velit. Nam placerat turpis purus, eu tristique ex tincidunt et. Mauris
+sed augue eget turpis ultrices tincidunt. Sed et mi in leo porta
+egestas. Aliquam non laoreet velit. Nunc quis ex vitae eros aliquet
+auctor nec ac libero. Duis laoreet sapien eu mi luctus, in bibendum leo
+molestie. Sed hendrerit diam diam, ac dapibus nisl volutpat vitae.
+Aliquam bibendum varius libero, eu efficitur justo rutrum at. Sed at
+tempus elit.
+\end{abstract}
+
+
+
+
+
+\begin{keyword}
+    keyword1 \sep 
+    keyword2
+\end{keyword}
+\end{frontmatter}
+    
+
+\subsection{Capítulo 1
+Introducción}\label{capuxedtulo-1-introducciuxf3n}
+
+{[}cite\_start{]}Las \textbf{redes neuronales convolucionales profundas
+(CNNs)} han estado en el centro de espectaculares avances en el
+aprendizaje profundo{[}cite: 312{]}. {[}cite\_start{]}Aunque las CNNs se
+han utilizado tan pronto como en los años noventa para resolver tareas
+de reconocimiento de caracteres (Le Cun et al., 1997) {[}cite:
+313{]}{[}cite\_start{]}, su aplicación generalizada actual se debe a
+trabajos mucho más recientes, cuando se utilizó una CNN profunda para
+superar el estado del arte en el desafío de clasificación de imágenes
+ImageNet (Krizhevsky et al., 2012){[}cite: 313{]}.
+
+{[}cite\_start{]}Por lo tanto, las redes neuronales convolucionales
+constituyen una herramienta muy útil para los profesionales del
+aprendizaje automático{[}cite: 314{]}. {[}cite\_start{]}Sin embargo,
+aprender a usar las CNNs por primera vez es generalmente una experiencia
+intimidante{[}cite: 315{]}. {[}cite\_start{]}La \textbf{forma de la
+salida de una capa convolucional} se ve afectada por la forma de su
+entrada, así como por la elección de la forma del núcleo
+(\emph{kernel}), el relleno de ceros (\emph{zero padding}) y los pasos
+(\emph{strides}), y la relación entre estas propiedades no es trivial de
+inferir{[}cite: 316{]}. {[}cite\_start{]}Esto contrasta con las
+\textbf{capas totalmente conectadas}, cuyo tamaño de salida es
+independiente del tamaño de la entrada{[}cite: 317{]}.
+{[}cite\_start{]}Además, las CNNs también suelen presentar una etapa de
+\textbf{agrupamiento (\emph{pooling})}, lo que añade otro nivel de
+complejidad con respecto a las redes totalmente conectadas{[}cite:
+318{]}. {[}cite\_start{]}Finalmente, las llamadas \textbf{capas
+convolucionales transpuestas} (también conocidas como capas
+convolucionales con pasos fraccionados) se han empleado en cada vez más
+trabajos últimamente (Zeiler et al., 2011; Zeiler y Fergus, 2014; Long
+et al., 2015; Radford et al., 2015; Visin et al., 2015; Im et al., 2016)
+{[}cite: 319{]}{[}cite\_start{]}, y su relación con las capas
+convolucionales se ha explicado con diversos grados de claridad{[}cite:
+319{]}.
+
+{[}cite\_start{]}El objetivo de esta guía es doble{[}cite: 320{]}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  {[}cite\_start{]}Explicar la relación entre las capas convolucionales
+  y las capas convolucionales transpuestas{[}cite: 321{]}.
+\item
+  {[}cite\_start{]}Proporcionar una comprensión intuitiva de la relación
+  entre la forma de la entrada, la forma del núcleo, el relleno de
+  ceros, los pasos y la forma de la salida en las capas convolucionales,
+  de \emph{pooling} y convolucionales transpuestas{[}cite: 322{]}.
+\end{enumerate}
+
+{[}cite\_start{]}Para seguir siendo ampliamente aplicables, los
+resultados mostrados en esta guía son independientes de los detalles de
+implementación y se aplican a todos los \emph{frameworks} de aprendizaje
+automático de uso común, como Theano (Bergstra et al., 2010; Bastien et
+al., 2012) {[}cite: 323{]}{[}cite\_start{]}, Torch (Collobert et al.,
+2011), Tensorflow (Abadi et al., 2015) y Caffe (Jia et al.,
+2014){[}cite: 325{]}.
+
+{[}cite\_start{]}Este capítulo revisa brevemente los principales bloques
+de construcción de las CNNs, a saber, las convoluciones discretas y el
+\emph{pooling}{[}cite: 326{]}. {[}cite\_start{]}Para un tratamiento en
+profundidad del tema, consulte el Capítulo 9 del libro de texto
+\emph{Deep Learning} (Goodfellow et al., 2016){[}cite: 327{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.1 Convoluciones
+discretas}\label{convoluciones-discretas}
+
+{[}cite\_start{]}El pan de cada día de las redes neuronales son las
+\textbf{transformaciones afines}: se recibe un vector como entrada y se
+multiplica por una matriz para producir una salida (a la que se suele
+sumar un vector de sesgo antes de pasar el resultado a través de una no
+linealidad){[}cite: 330{]}. {[}cite\_start{]}Esto es aplicable a
+cualquier tipo de entrada, ya sea una imagen, un clip de sonido o una
+colección desordenada de características: sea cual sea su
+dimensionalidad, su representación siempre se puede aplanar en un vector
+antes de la transformación{[}cite: 331{]}.
+
+{[}cite\_start{]}Las imágenes, los clips de sonido y muchos otros tipos
+de datos similares tienen una \textbf{estructura intrínseca}{[}cite:
+332{]}. {[}cite\_start{]}Más formalmente, comparten estas propiedades
+importantes{[}cite: 333{]}:
+
+\begin{itemize}
+\tightlist
+\item
+  {[}cite\_start{]}Se almacenan como \textbf{matrices
+  multidimensionales}{[}cite: 334{]}.
+\item
+  {[}cite\_start{]}Presentan uno o más ejes para los que el
+  \textbf{orden es importante} (por ejemplo, los ejes de ancho y alto
+  para una imagen, el eje del tiempo para un clip de sonido){[}cite:
+  335{]}.
+\item
+  {[}cite\_start{]}Se utiliza un eje, llamado \textbf{eje de canal},
+  para acceder a diferentes vistas de los datos (por ejemplo, los
+  canales rojo, verde y azul de una imagen en color, o los canales
+  izquierdo y derecho de una pista de audio estéreo){[}cite: 336{]}.
+\end{itemize}
+
+{[}cite\_start{]}Estas propiedades no se explotan cuando se aplica una
+transformación afín {[}cite: 337{]}{[}cite\_start{]}; de hecho, todos
+los ejes se tratan de la misma manera y la información topológica no se
+tiene en cuenta{[}cite: 338{]}. {[}cite\_start{]}Aún así, aprovechar la
+estructura implícita de los datos puede resultar muy útil para resolver
+algunas tareas, como la visión por computadora y el reconocimiento de
+voz, y en estos casos sería mejor preservarla{[}cite: 339{]}.
+{[}cite\_start{]}Aquí es donde entran en juego las \textbf{convoluciones
+discretas}{[}cite: 340{]}.
+
+{[}cite\_start{]}Una convolución discreta es una \textbf{transformación
+lineal que preserva esta noción de orden}{[}cite: 341{]}.
+{[}cite\_start{]}Es \textbf{dispersa} (solo unas pocas unidades de
+entrada contribuyen a una unidad de salida dada) y \textbf{reutiliza
+parámetros} (los mismos pesos se aplican a múltiples ubicaciones en la
+entrada){[}cite: 342{]}.
+
+{[}cite\_start{]}La Figura 1.1 proporciona un ejemplo de una convolución
+discreta{[}cite: 343{]}. {[}cite\_start{]}La cuadrícula de color azul
+claro se denomina \textbf{mapa de características de entrada}
+(\emph{input feature map}){[}cite: 343{]}. Para simplificar el dibujo,
+se representa un solo mapa de características de entrada, pero no es
+raro tener múltiples mapas de características apilados uno encima del
+otro. Un \textbf{núcleo} (\emph{kernel}) (área sombreada) de valor
+
+\[
+\begin{pmatrix}
+2 & 2 & 3 \\
+2 & 0 & 0 \\
+2 & 0 & 2
+\end{pmatrix}
+\]
+
+{[}cite\_start{]}se desliza a través del mapa de características de
+entrada{[}cite: 356{]}. {[}cite\_start{]}En cada ubicación, se calcula
+el producto entre cada elemento del núcleo y el elemento de entrada que
+se superpone, y los resultados se suman para obtener la salida en la
+ubicación actual{[}cite: 356{]}. {[}cite\_start{]}El procedimiento se
+puede repetir utilizando diferentes núcleos para formar tantos mapas de
+características de salida como se desee (Figura 1.3){[}cite: 357{]}.
+{[}cite\_start{]}Las salidas finales de este procedimiento se denominan
+\textbf{mapas de características de salida} (\emph{output feature
+maps}){[}cite: 358{]}. {[}cite\_start{]}Si hay múltiples mapas de
+características de entrada, el núcleo tendrá que ser tridimensional o,
+de manera equivalente, cada uno de los mapas de características se
+convolucionará con un núcleo distinto y los mapas de características
+resultantes se sumarán elemento a elemento para producir el mapa de
+características de salida{[}cite: 359{]}.
+
+{[}cite\_start{]}La convolución representada en la Figura 1.1 es una
+instancia de una \textbf{convolución 2-D}, pero se puede generalizar a
+\textbf{convoluciones N-D}{[}cite: 360{]}. {[}cite\_start{]}Por ejemplo,
+en una convolución 3-D, el núcleo sería un cuboide y se deslizaría a
+través de la altura, el ancho y la profundidad del mapa de
+características de entrada{[}cite: 361{]}.
+
+{[}cite\_start{]}La colección de núcleos que definen una convolución
+discreta tiene una forma que corresponde a alguna permutación de
+\[(n, m, k_1, \dots, k_N)\] donde{[}cite: 362{]}:
+
+\begin{itemize}
+\tightlist
+\item
+  {[}cite\_start{]}\(n \equiv\) número de mapas de características de
+  salida{[}cite: 363{]},
+\item
+  {[}cite\_start{]}\(m \equiv\) número de mapas de características de
+  entrada{[}cite: 364{]},
+\item
+  {[}cite\_start{]}\(k_j \equiv\) tamaño del núcleo a lo largo del eje
+  \(j\){[}cite: 364{]}.
+\end{itemize}
+
+{[}cite\_start{]}Las siguientes propiedades afectan el tamaño de salida
+\(o_j\) de una capa convolucional a lo largo del eje \(j\){[}cite:
+365{]}:
+
+\begin{itemize}
+\tightlist
+\item
+  {[}cite\_start{]}\(i_j\): tamaño de entrada a lo largo del eje
+  \(j\){[}cite: 366{]},
+\item
+  {[}cite\_start{]}\(k_j\): tamaño del núcleo a lo largo del eje
+  \(j\){[}cite: 367{]},
+\item
+  {[}cite\_start{]}\(s_j\): paso (distancia entre dos posiciones
+  consecutivas del núcleo) a lo largo del eje \(j\){[}cite: 368{]},
+\item
+  {[}cite\_start{]}\(p_j\): relleno de ceros (número de ceros
+  concatenados al principio y al final de un eje) a lo largo del eje
+  \(j\){[}cite: 369{]}.
+\end{itemize}
+
+{[}cite\_start{]}Por ejemplo, la Figura 1.2 muestra un núcleo de
+\(3 \times 3\) aplicado a una entrada de \(5 \times 5\) rellenada con un
+borde de ceros de \(1 \times 1\) utilizando pasos de
+\(2 \times 2\){[}cite: 370{]}.
+
+{[}cite\_start{]}Tenga en cuenta que los pasos constituyen una forma de
+\textbf{submuestreo}{[}cite: 371{]}. {[}cite\_start{]}Como alternativa a
+ser interpretados como una medida de cuánto se traslada el núcleo, los
+pasos también pueden verse como la cantidad de salida que se
+retiene{[}cite: 371{]}. {[}cite\_start{]}Por ejemplo, mover el núcleo en
+saltos de dos es equivalente a mover el núcleo en saltos de uno, pero
+reteniendo solo los elementos de salida impares (Figura 1.4){[}cite:
+372{]}.
+
+{[}cite\_start{]}\textsuperscript{1}Un ejemplo de esto es lo que se
+denominó anteriormente canales para imágenes y clips de sonido{[}cite:
+373{]}.
+
+{[}cite\_start{]}\textsuperscript{2}Aunque hay una distinción entre
+convolución y correlación cruzada desde una perspectiva de procesamiento
+de señales, las dos se vuelven intercambiables cuando se aprende el
+núcleo{[}cite: 374{]}. {[}cite\_start{]}Por el bien de la simplicidad y
+para ser coherentes con la mayor parte de la literatura de aprendizaje
+automático, el término \textbf{convolución} se utilizará en esta
+guía{[}cite: 375{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Figura 1.1:} Cálculo de los valores de salida de una convolución
+discreta.
+
+\textbf{Figura 1.2:} Cálculo de los valores de salida de una convolución
+discreta para \(N=2\), \(i_1=i_2=5\), \(k_1=k_2=3\), \(s_1=s_2=2\), y
+\(p_1=p_2=1\).
+
+{[}cite\_start{]}\textbf{Figura 1.3:} Una convolución que mapea de dos
+mapas de características de entrada a tres mapas de características de
+salida utilizando una colección de núcleos \textbf{w} de
+\(3 \times 2 \times 3 \times 3\){[}cite: 377{]}. {[}cite\_start{]}En la
+trayectoria izquierda, el mapa de características de entrada 1 se
+convoluciona con el núcleo \(w_{1,1}\) y el mapa de características de
+entrada 2 se convoluciona con el núcleo \(w_{1,2}\), y los resultados se
+suman elemento a elemento para formar el primer mapa de características
+de salida{[}cite: 378{]}. {[}cite\_start{]}Se repite lo mismo para las
+trayectorias central y derecha para formar el segundo y tercer mapa de
+características, y los tres mapas de características de salida se
+agrupan para formar la salida{[}cite: 379{]}.
+
+\textbf{Figura 1.4:} Una forma alternativa de ver los pasos.
+{[}cite\_start{]}En lugar de trasladar el núcleo de \(3 \times 3\) en
+incrementos de \(s=2\) (izquierda), el núcleo se traslada en incrementos
+de 1 y solo se retiene uno de cada \(s=2\) elementos de salida
+(derecha){[}cite: 380{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{1.2 Pooling (Agrupamiento)}\label{pooling-agrupamiento}
+
+{[}cite\_start{]}Además de las convoluciones discretas en sí, las
+\textbf{operaciones de \emph{pooling}} (agrupamiento) constituyen otro
+bloque de construcción importante en las CNNs{[}cite: 383{]}.
+{[}cite\_start{]}Las operaciones de \emph{pooling} reducen el tamaño de
+los mapas de características utilizando alguna función para resumir
+subregiones, como tomar el promedio o el valor máximo{[}cite: 384{]}.
+
+{[}cite\_start{]}El \emph{Pooling} funciona deslizando una ventana a
+través de la entrada y alimentando el contenido de la ventana a una
+función de \emph{pooling}{[}cite: 385{]}. {[}cite\_start{]}En cierto
+sentido, el \emph{pooling} funciona de manera muy similar a una
+convolución discreta, pero reemplaza la combinación lineal descrita por
+el núcleo con alguna otra función{[}cite: 386{]}. {[}cite\_start{]}La
+Figura 1.5 proporciona un ejemplo de \emph{average pooling}
+(agrupamiento promedio), y la Figura 1.6 hace lo mismo para \emph{max
+pooling} (agrupamiento máximo){[}cite: 387{]}.
+
+{[}cite\_start{]}Las siguientes propiedades afectan el tamaño de salida
+\(o_j\) de una capa de \emph{pooling} a lo largo del eje \(j\){[}cite:
+389{]}:
+
+\begin{itemize}
+\tightlist
+\item
+  {[}cite\_start{]}\(i_j\): tamaño de entrada a lo largo del eje
+  \(j\){[}cite: 390{]},
+\item
+  {[}cite\_start{]}\(k_j\): tamaño de la ventana de \emph{pooling} a lo
+  largo del eje \(j\){[}cite: 392{]},
+\item
+  {[}cite\_start{]}\(s_j\): paso (distancia entre dos posiciones
+  consecutivas de la ventana de \emph{pooling}) a lo largo del eje
+  \(j\){[}cite: 393{]}.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+{[}cite\_start{]}\textbf{Figura 1.5:} Cálculo de los valores de salida
+de una operación de \emph{average pooling} de \(3 \times 3\) en una
+entrada de \(5 \times 5\) utilizando pasos de \(1 \times 1\){[}cite:
+395{]}.
+
+{[}cite\_start{]}\textbf{Figura 1.6:} Cálculo de los valores de salida
+de una operación de \emph{max pooling} de \(3 \times 3\) en una entrada
+de \(5 \times 5\) utilizando pasos de \(1 \times 1\){[}cite: 396{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Capítulo 2 Aritmética de la
+convolución}\label{capuxedtulo-2-aritmuxe9tica-de-la-convoluciuxf3n}
+
+{[}cite\_start{]}El análisis de la relación entre las propiedades de la
+capa convolucional se facilita por el hecho de que \textbf{no
+interactúan a través de los ejes} {[}cite: 398{]}{[}cite\_start{]}, es
+decir, la elección del tamaño del núcleo, el paso y el relleno de ceros
+a lo largo del eje \(j\) solo afecta el tamaño de la salida del eje
+\(j\){[}cite: 398{]}.
+
+{[}cite\_start{]}Debido a eso, este capítulo se centrará en el siguiente
+ajuste simplificado{[}cite: 399{]}:
+
+\begin{itemize}
+\tightlist
+\item
+  Convoluciones discretas 2-D (\(N = 2\)),
+\item
+  Entradas cuadradas (\(i_1 = i_2 = i\)),
+\item
+  Tamaño de núcleo cuadrado (\(k_1 = k_2 = k\)),
+\item
+  Mismos pasos a lo largo de ambos ejes (\(s_1 = s_2 = s\)),
+\item
+  Mismo relleno de ceros a lo largo de ambos ejes (\(p_1 = p_2 = p\)).
+\end{itemize}
+
+{[}cite\_start{]}Esto facilita el análisis y la visualización, pero
+tenga en cuenta que los resultados aquí descritos también se generalizan
+a los casos N-D y no cuadrados{[}cite: 400{]}.
+
+\subsubsection{2.1 Sin relleno de ceros, pasos
+unitarios}\label{sin-relleno-de-ceros-pasos-unitarios}
+
+{[}cite\_start{]}El caso más simple de analizar es cuando el núcleo
+simplemente se desliza por cada posición de la entrada (es decir,
+\(s = 1\) y \(p = 0\)){[}cite: 401{]}. {[}cite\_start{]}La Figura 2.1
+proporciona un ejemplo para \(i = 4\) y \(k = 3\){[}cite: 402{]}.
+
+{[}cite\_start{]}Una forma de definir el tamaño de salida en este caso
+es por el número de posibles ubicaciones del núcleo en la
+entrada{[}cite: 403{]}. {[}cite\_start{]}Consideremos el eje de ancho:
+el núcleo comienza en la parte más a la izquierda del mapa de
+características de entrada y se desliza en pasos de uno hasta que toca
+el lado derecho de la entrada{[}cite: 404{]}. {[}cite\_start{]}El tamaño
+de la salida será igual al número de pasos realizados, más uno, lo que
+representa la posición inicial del núcleo (Figura 2.8a){[}cite: 404{]}.
+{[}cite\_start{]}La misma lógica se aplica al eje de altura{[}cite:
+405{]}.
+
+Más formalmente, se puede inferir la siguiente relación:
+
+\textbf{Relación 1.} Para cualquier \(i\) y \(k\), y para \(s = 1\) y
+\(p = 0\),
+
+\[o = (i - k) + 1.\]
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.2 Relleno de ceros, pasos
+unitarios}\label{relleno-de-ceros-pasos-unitarios}
+
+{[}cite\_start{]}Para tener en cuenta el relleno de ceros (es decir,
+solo restringiendo a \(s = 1\)), consideremos su efecto en el tamaño de
+entrada efectivo: rellenar con \(p\) ceros cambia el tamaño de entrada
+efectivo de \(i\) a \(i + 2p\){[}cite: 407{]}. En el caso general, la
+Relación 1 se puede usar para inferir la siguiente relación:
+
+\textbf{Relación 2.} Para cualquier \(i\), \(k\) y \(p\), y para
+\(s = 1\),
+
+\[o = (i - k) + 2p + 1.\]
+
+{[}cite\_start{]}La Figura 2.2 proporciona un ejemplo para \(i = 5\),
+\(k = 4\) y \(p = 2\){[}cite: 407{]}.
+
+{[}cite\_start{]}En la práctica, se utilizan dos instancias específicas
+de relleno de ceros de forma bastante extensa debido a sus respectivas
+propiedades{[}cite: 408{]}. Discutámoslas con más detalle.
+
+\paragraph{\texorpdfstring{2.2.1 Relleno a la mitad (\emph{Half (same)
+padding})}{2.2.1 Relleno a la mitad (Half (same) padding)}}\label{relleno-a-la-mitad-half-same-padding}
+
+Tener el tamaño de salida igual al tamaño de entrada (es decir,
+\(o = i\)) puede ser una propiedad deseable:
+
+\textbf{Relación 3.} Para cualquier \(i\) y para \(k\) impar
+(\(k = 2n + 1, n \in \mathbb{N}\)), \(s = 1\) y
+\(p = \lfloor k/2 \rfloor = n\),
+
+\[
+\begin{aligned}
+o &= i + 2\lfloor k/2 \rfloor - (k - 1) \\
+&= i + 2n - 2n \\
+&= i.
+\end{aligned}
+\]
+
+{[}cite\_start{]}Esto a veces se denomina \textbf{relleno a la mitad}
+(\emph{half}) o \textbf{relleno igual} (\emph{same padding}){[}cite:
+409{]}. {[}cite\_start{]}La Figura 2.3 proporciona un ejemplo para
+\(i = 5\), \(k = 3\) y (por lo tanto) \(p = 1\){[}cite: 410{]}.
+
+\paragraph{\texorpdfstring{2.2.2 Relleno completo (\emph{Full
+padding})}{2.2.2 Relleno completo (Full padding)}}\label{relleno-completo-full-padding}
+
+{[}cite\_start{]}Si bien convolucionar un núcleo generalmente disminuye
+el tamaño de salida con respecto al tamaño de entrada, a veces se
+requiere lo contrario{[}cite: 411{]}. Esto se puede lograr con un
+relleno de ceros adecuado:
+
+\textbf{Relación 4.} Para cualquier \(i\) y \(k\), y para \(p = k - 1\)
+y \(s = 1\),
+
+\[
+\begin{aligned}
+o &= i + 2(k - 1) - (k - 1) \\
+&= i + (k - 1).
+\end{aligned}
+\]
+
+{[}cite\_start{]}Esto a veces se denomina \textbf{relleno completo}
+(\emph{full padding}) {[}cite: 418{]}{[}cite\_start{]}, porque en este
+ajuste se tiene en cuenta toda posible superposición parcial o completa
+del núcleo en el mapa de características de entrada{[}cite: 418{]}.
+{[}cite\_start{]}La Figura 2.4 proporciona un ejemplo para \(i = 5\),
+\(k = 3\) y (por lo tanto) \(p = 2\){[}cite: 419{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+{[}cite\_start{]}\textbf{Figura 2.1:} (Sin relleno, pasos unitarios)
+Convolución de un núcleo de \(3 \times 3\) sobre una entrada de
+\(4 \times 4\) utilizando pasos unitarios (es decir,
+\(i = 4, k = 3, s = 1\) y \(p = 0\)){[}cite: 413{]}.
+
+{[}cite\_start{]}\textbf{Figura 2.2:} (Relleno arbitrario, pasos
+unitarios) Convolución de un núcleo de \(4 \times 4\) sobre una entrada
+de \(5 \times 5\) rellenada con un borde de ceros de \(2 \times 2\)
+utilizando pasos unitarios (es decir, \(i = 5, k = 4, s = 1\) y
+\(p = 2\)){[}cite: 414{]}.
+
+{[}cite\_start{]}\textbf{Figura 2.3:} (Relleno a la mitad, pasos
+unitarios) Convolución de un núcleo de \(3 \times 3\) sobre una entrada
+de \(5 \times 5\) utilizando relleno a la mitad y pasos unitarios (es
+decir, \(i = 5, k = 3, s = 1\) y \(p = 1\)){[}cite: 415{]}.
+
+{[}cite\_start{]}\textbf{Figura 2.4:} (Relleno completo, pasos
+unitarios) Convolución de un núcleo de \(3 \times 3\) sobre una entrada
+de \(5 \times 5\) utilizando relleno completo y pasos unitarios (es
+decir, \(i = 5, k = 3, s = 1\) y \(p = 2\)){[}cite: 416{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.3 Sin relleno de ceros, pasos no
+unitarios}\label{sin-relleno-de-ceros-pasos-no-unitarios}
+
+{[}cite\_start{]}Todas las relaciones derivadas hasta ahora solo se
+aplican a convoluciones con pasos unitarios{[}cite: 420{]}.
+{[}cite\_start{]}Incorporar \textbf{pasos no unitarios} requiere otro
+salto de inferencia{[}cite: 421{]}. {[}cite\_start{]}Para facilitar el
+análisis, ignoremos momentáneamente el relleno de ceros (es decir,
+\(s > 1\) y \(p = 0\)){[}cite: 422{]}. {[}cite\_start{]}La Figura 2.5
+proporciona un ejemplo para \(i = 5\), \(k = 3\) y \(s = 2\){[}cite:
+422{]}.
+
+{[}cite\_start{]}Una vez más, el tamaño de la salida se puede definir en
+términos del número de posibles ubicaciones del núcleo en la
+entrada{[}cite: 423{]}. {[}cite\_start{]}Consideremos el eje de ancho:
+el núcleo comienza como de costumbre en la parte más a la izquierda de
+la entrada, pero esta vez se desliza en pasos de tamaño \(s\) hasta que
+toca el lado derecho de la entrada{[}cite: 424{]}. {[}cite\_start{]}El
+tamaño de la salida es de nuevo igual al número de pasos realizados, más
+uno, lo que representa la posición inicial del núcleo (Figura
+2.8b){[}cite: 425{]}. {[}cite\_start{]}La misma lógica se aplica al eje
+de altura{[}cite: 425{]}.
+
+A partir de esto, se puede inferir la siguiente relación:
+
+\textbf{Relación 5.} Para cualquier \(i\), \(k\) y \(s\), y para
+\(p = 0\),
+
+\[o = \left\lfloor \frac{i - k}{s} \right\rfloor + 1.\]
+
+{[}cite\_start{]}La función piso (\(\lfloor \cdot \rfloor\)) da cuenta
+del hecho de que a veces el último paso posible no coincide con que el
+núcleo llegue al final de la entrada, es decir, algunas unidades de
+entrada quedan fuera (consulte la Figura 2.7 para un ejemplo de tal
+caso){[}cite: 426{]}.
+
+\subsubsection{2.4 Relleno de ceros, pasos no
+unitarios}\label{relleno-de-ceros-pasos-no-unitarios}
+
+El caso más general (convolucionar sobre una entrada rellenada con ceros
+utilizando pasos no unitarios) se puede derivar aplicando la Relación 5
+a una entrada efectiva de tamaño \(i + 2p\), en analogía con lo que se
+hizo para la Relación 2:
+
+\textbf{Relación 6.} Para cualquier \(i\), \(k\), \(p\) y \(s\),
+
+\[o = \left\lfloor \frac{i + 2p - k}{s} \right\rfloor + 1.\]
+
+{[}cite\_start{]}Como antes, la función piso significa que en algunos
+casos una convolución producirá el mismo tamaño de salida para múltiples
+tamaños de entrada{[}cite: 427{]}. {[}cite\_start{]}Más específicamente,
+si \(i + 2p - k\) es un múltiplo de \(s\), entonces cualquier tamaño de
+entrada \(j = i + a\), \(a \in \{0, \dots, s-1\}\) producirá el mismo
+tamaño de salida{[}cite: 428{]}. {[}cite\_start{]}Tenga en cuenta que
+esta ambigüedad se aplica solo para \(s > 1\){[}cite: 429{]}.
+
+{[}cite\_start{]}La Figura 2.6 muestra un ejemplo con
+\(i = 5, k = 3, s = 2\) y \(p = 1\), mientras que la Figura 2.7
+proporciona un ejemplo para \(i = 6, k = 3, s = 2\) y \(p = 1\){[}cite:
+429{]}. {[}cite\_start{]}Curiosamente, a pesar de tener diferentes
+tamaños de entrada, estas convoluciones comparten el mismo tamaño de
+salida{[}cite: 430{]}. {[}cite\_start{]}Si bien esto no afecta el
+análisis de las convoluciones, complicará el análisis en el caso de las
+convoluciones transpuestas{[}cite: 431{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+{[}cite\_start{]}\textbf{Figura 2.5:} (Sin relleno de ceros, pasos
+arbitrarios) Convolución de un núcleo de \(3 \times 3\) sobre una
+entrada de \(5 \times 5\) utilizando pasos de \(2 \times 2\) (es decir,
+\(i = 5, k = 3, s = 2\) y \(p = 0\)){[}cite: 432{]}.
+
+{[}cite\_start{]}\textbf{Figura 2.6:} (Relleno y pasos arbitrarios)
+Convolución de un núcleo de \(3 \times 3\) sobre una entrada de
+\(5 \times 5\) rellenada con un borde de ceros de \(1 \times 1\)
+utilizando pasos de \(2 \times 2\) (es decir, \(i = 5, k = 3, s = 2\) y
+\(p = 1\)){[}cite: 433{]}.
+
+{[}cite\_start{]}\textbf{Figura 2.7:} (Relleno y pasos arbitrarios)
+Convolución de un núcleo de \(3 \times 3\) sobre una entrada de
+\(6 \times 6\) rellenada con un borde de ceros de \(1 \times 1\)
+utilizando pasos de \(2 \times 2\) (es decir, \(i = 6, k = 3, s = 2\) y
+\(p = 1\)){[}cite: 434{]}. {[}cite\_start{]}En este caso, la fila
+inferior y la columna derecha de la entrada rellenada con ceros no están
+cubiertas por el núcleo{[}cite: 435{]}.
+
+{[}cite\_start{]}\textbf{Figura 2.8:} Conteo de posiciones del
+núcleo{[}cite: 438{]}. (a) {[}cite\_start{]}El núcleo tiene que
+deslizarse dos pasos hacia la derecha para tocar el lado derecho de la
+entrada (y de manera equivalente hacia abajo){[}cite: 436{]}.
+{[}cite\_start{]}Añadiendo uno para tener en cuenta la posición inicial
+del núcleo, el tamaño de salida es \(3 \times 3\){[}cite: 437{]}. (b)
+{[}cite\_start{]}El núcleo tiene que deslizarse un paso de tamaño dos
+hacia la derecha para tocar el lado derecho de la entrada (y de manera
+equivalente hacia abajo){[}cite: 437{]}. {[}cite\_start{]}Añadiendo uno
+para tener en cuenta la posición inicial del núcleo, el tamaño de salida
+es \(2 \times 2\){[}cite: 438{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Capítulo 3 Aritmética del
+Pooling}\label{capuxedtulo-3-aritmuxe9tica-del-pooling}
+
+{[}cite\_start{]}En una red neuronal, las capas de \emph{pooling}
+proporcionan \textbf{invariancia a pequeñas traslaciones de la
+entrada}{[}cite: 440{]}. {[}cite\_start{]}El tipo más común de
+\emph{pooling} es el \textbf{max pooling} (agrupamiento máximo), que
+consiste en dividir la entrada en parches (generalmente no superpuestos)
+y generar el valor máximo de cada parche{[}cite: 441{]}.
+{[}cite\_start{]}Existen otros tipos de \emph{pooling}, por ejemplo, el
+\emph{mean} o \emph{average pooling} (agrupamiento medio o promedio),
+que comparten la misma idea de agregar la entrada localmente aplicando
+una no linealidad al contenido de algunos parches (Boureau et al.,
+2010a,b, 2011; Saxe et al., 2011){[}cite: 442{]}.
+
+{[}cite\_start{]}Algunos lectores pueden haber notado que el tratamiento
+de la aritmética de la convolución solo se basa en la suposición de que
+alguna función se aplica repetidamente a subconjuntos de la
+entrada{[}cite: 444{]}. {[}cite\_start{]}Esto significa que las
+relaciones derivadas en el capítulo anterior se pueden reutilizar en el
+caso de la aritmética de \emph{pooling}{[}cite: 444{]}. Dado que el
+\emph{pooling} no implica relleno de ceros, la relación que describe el
+caso general es la siguiente:
+
+\textbf{Relación 7.} Para cualquier \(i\), \(k\) y \(s\),
+
+\[o = \left\lfloor \frac{i - k}{s} \right\rfloor + 1.\]
+
+{[}cite\_start{]}Esta relación es válida para cualquier tipo de
+\emph{pooling}{[}cite: 446{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Capítulo 4 Aritmética de la convolución
+transpuesta}\label{capuxedtulo-4-aritmuxe9tica-de-la-convoluciuxf3n-transpuesta}
+
+{[}cite\_start{]}La necesidad de \textbf{convoluciones transpuestas}
+generalmente surge del deseo de utilizar una transformación que vaya en
+la dirección opuesta a una convolución normal {[}cite:
+447{]}{[}cite\_start{]}, es decir, de algo que tenga la forma de la
+salida de alguna convolución a algo que tenga la forma de su entrada,
+manteniendo un patrón de conectividad que sea compatible con dicha
+convolución{[}cite: 447{]}. {[}cite\_start{]}Por ejemplo, se podría usar
+tal transformación como la capa de decodificación de un autoencoder
+convolucional o para proyectar mapas de características a un espacio de
+mayor dimensión{[}cite: 448{]}.
+
+{[}cite\_start{]}Una vez más, el caso convolucional es considerablemente
+más complejo que el caso totalmente conectado, que solo requiere usar
+una matriz de pesos cuya forma se ha traspuesto{[}cite: 449{]}.
+{[}cite\_start{]}Sin embargo, dado que toda convolución se reduce a una
+implementación eficiente de una operación matricial, los conocimientos
+obtenidos del caso totalmente conectado son útiles para resolver el caso
+convolucional{[}cite: 450{]}.
+
+{[}cite\_start{]}Al igual que con la aritmética de la convolución, la
+disertación sobre la aritmética de la convolución transpuesta se
+simplifica por el hecho de que las propiedades de la convolución
+transpuesta \textbf{no interactúan a través de los ejes}{[}cite: 452{]}.
+{[}cite\_start{]}El capítulo se centrará en el siguiente ajuste{[}cite:
+452{]}:
+
+\begin{itemize}
+\tightlist
+\item
+  Convoluciones transpuestas 2-D (\(N = 2\)),
+\item
+  Entradas cuadradas (\(i_1 = i_2 = i\)),
+\item
+  Tamaño de núcleo cuadrado (\(k_1 = k_2 = k\)),
+\item
+  Mismos pasos a lo largo de ambos ejes (\(s_1 = s_2 = s\)),
+\item
+  Mismo relleno de ceros a lo largo de ambos ejes (\(p_1 = p_2 = p\)).
+\end{itemize}
+
+{[}cite\_start{]}Una vez más, los resultados descritos se generalizan a
+los casos N-D y no cuadrados{[}cite: 453{]}.
+
+\subsubsection{4.1 La convolución como una operación
+matricial}\label{la-convoluciuxf3n-como-una-operaciuxf3n-matricial}
+
+{[}cite\_start{]}Tomemos como ejemplo la convolución representada en la
+Figura 2.1{[}cite: 454{]}. {[}cite\_start{]}Si la entrada y la salida se
+desenrollaran en vectores de izquierda a derecha, de arriba a abajo, la
+convolución podría representarse como una \textbf{matriz dispersa \(C\)}
+donde los elementos no nulos son los elementos \(w_{i,j}\) del núcleo
+(siendo \(i\) y \(j\) la fila y la columna del núcleo,
+respectivamente){[}cite: 455{]}:
+
+\[
+\begin{pmatrix}
+w_{0,0} & w_{0,1} & w_{0,2} & 0 & w_{1,0} & w_{1,1} & w_{1,2} & 0 & w_{2,0} & w_{2,1} & w_{2,2} & 0 & 0 & 0 & 0 & 0 \\
+0 & w_{0,0} & w_{0,1} & w_{0,2} & 0 & w_{1,0} & w_{1,1} & w_{1,2} & 0 & w_{2,0} & w_{2,1} & w_{2,2} & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & w_{0,0} & w_{0,1} & w_{0,2} & 0 & w_{1,0} & w_{1,1} & w_{1,2} & 0 & w_{2,0} & w_{2,1} & w_{2,2} & 0 \\
+0 & 0 & 0 & 0 & 0 & w_{0,0} & w_{0,1} & w_{0,2} & 0 & w_{1,0} & w_{1,1} & w_{1,2} & 0 & w_{2,0} & w_{2,1} & w_{2,2}
+\end{pmatrix}
+\]
+
+{[}cite\_start{]}Esta operación lineal toma la matriz de entrada
+aplanada como un vector de 16 dimensiones y produce un vector de 4
+dimensiones que luego se remodela como la matriz de salida de
+\(2 \times 2\){[}cite: 457{]}.
+
+{[}cite\_start{]}Usando esta representación, el \textbf{pase hacia
+atrás} (\emph{backward pass}) se obtiene fácilmente transponiendo \(C\)
+{[}cite: 458{]}{[}cite\_start{]}; en otras palabras, el error se
+retropropaga multiplicando la pérdida por \(C^T\){[}cite: 459{]}.
+{[}cite\_start{]}Esta operación toma un vector de 4 dimensiones como
+entrada y produce un vector de 16 dimensiones como salida, y su patrón
+de conectividad es compatible con \(C\) por construcción{[}cite: 460{]}.
+
+{[}cite\_start{]}Notablemente, el núcleo \(w\) define tanto las matrices
+\(C\) como \(C^T\) utilizadas para los pases hacia adelante y hacia
+atrás{[}cite: 461{]}.
+
+\subsubsection{4.2 Convolución
+transpuesta}\label{convoluciuxf3n-transpuesta}
+
+{[}cite\_start{]}Consideremos ahora lo que se requeriría para ir en la
+otra dirección, es decir, mapear de un espacio de 4 dimensiones a un
+espacio de 16 dimensiones, manteniendo el patrón de conectividad de la
+convolución representada en la Figura 2.1{[}cite: 462{]}.
+{[}cite\_start{]}Esta operación se conoce como \textbf{convolución
+transpuesta}{[}cite: 462{]}.
+
+{[}cite\_start{]}Las convoluciones transpuestas, también llamadas
+\textbf{convoluciones con pasos fraccionados} o
+\textbf{deconvoluciones}\textsuperscript{1}, funcionan intercambiando
+los pases hacia adelante y hacia atrás de una convolución{[}cite:
+463{]}. {[}cite\_start{]}Una forma de expresarlo es notar que el núcleo
+define una convolución, pero si es una convolución directa o una
+convolución transpuesta está determinado por cómo se calculan los pases
+hacia adelante y hacia atrás{[}cite: 464{]}. {[}cite\_start{]}Por
+ejemplo, aunque el núcleo \(w\) define una convolución cuyos pases hacia
+adelante y hacia atrás se calculan multiplicando por \(C\) y \(C^T\)
+respectivamente, también define una convolución transpuesta cuyos pases
+hacia adelante y hacia atrás se calculan multiplicando por \(C^T\) y
+\((C^T)^T = C\) respectivamente\textsuperscript{2}{[}cite: 464{]}.
+
+{[}cite\_start{]}Finalmente, tenga en cuenta que \textbf{siempre es
+posible emular una convolución transpuesta con una convolución
+directa}{[}cite: 465{]}. {[}cite\_start{]}La desventaja es que
+generalmente implica agregar muchas columnas y filas de ceros a la
+entrada, lo que resulta en una implementación mucho menos
+eficiente{[}cite: 468{]}.
+
+{[}cite\_start{]}Basándose en lo que se ha introducido hasta ahora, este
+capítulo procederá de forma algo inversa con respecto al capítulo de
+aritmética de la convolución, derivando las propiedades de cada
+convolución transpuesta haciendo referencia a la convolución directa con
+la que comparte el núcleo, y definiendo la convolución directa
+equivalente{[}cite: 469{]}.
+
+{[}cite\_start{]}\textsuperscript{1}El término
+``\textbf{deconvolución}'' se utiliza a veces en la literatura, pero
+abogamos en contra de él basándonos en que una deconvolución se define
+matemáticamente como la inversa de una convolución, que es diferente de
+una convolución transpuesta{[}cite: 466{]}.
+
+{[}cite\_start{]}\textsuperscript{2}La operación de convolución
+transpuesta puede considerarse como el gradiente de alguna convolución
+con respecto a su entrada, que es generalmente cómo se implementan las
+convoluciones transpuestas en la práctica{[}cite: 467{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{4.3 Sin relleno de ceros, pasos unitarios,
+traspuesta}\label{sin-relleno-de-ceros-pasos-unitarios-traspuesta}
+
+{[}cite\_start{]}La forma más sencilla de pensar en una convolución
+transpuesta en una entrada dada es imaginar dicha entrada como el
+resultado de una convolución directa aplicada a algún mapa de
+características inicial{[}cite: 471{]}. {[}cite\_start{]}La convolución
+transpuesta puede considerarse entonces como la operación que permite
+recuperar la forma\textsuperscript{3} de este mapa de características
+inicial{[}cite: 472{]}.
+
+{[}cite\_start{]}Consideremos la convolución de un núcleo de
+\(3 \times 3\) en una entrada de \(4 \times 4\) con paso unitario y sin
+relleno (es decir, \(i = 4, k = 3, s = 1\) y \(p = 0\)){[}cite: 473{]}.
+{[}cite\_start{]}Como se representa en la Figura 2.1, esto produce una
+salida de \(2 \times 2\){[}cite: 474{]}. {[}cite\_start{]}La transpuesta
+de esta convolución tendrá entonces una salida con forma de
+\(4 \times 4\) cuando se aplique a una entrada de \(2 \times 2\){[}cite:
+475{]}.
+
+{[}cite\_start{]}Otra forma de obtener el resultado de una convolución
+transpuesta es aplicar una convolución directa equivalente, pero mucho
+menos eficiente{[}cite: 476{]}. {[}cite\_start{]}El ejemplo descrito
+hasta ahora podría abordarse convolucionando un núcleo de \(3 \times 3\)
+sobre una entrada de \(2 \times 2\) rellenada con un borde de ceros de
+\(2 \times 2\) utilizando pasos unitarios (es decir,
+\(i' = 2, k' = k, s' = 1\) y \(p' = 2\)), como se muestra en la Figura
+4.1{[}cite: 477{]}. {[}cite\_start{]}Notablemente, los tamaños del
+núcleo y del paso siguen siendo los mismos, pero la entrada de la
+convolución transpuesta ahora está rellenada con
+ceros\textsuperscript{4}{[}cite: 477{]}.
+
+{[}cite\_start{]}Una forma de comprender la lógica detrás del relleno de
+ceros es considerar el patrón de conectividad de la convolución
+transpuesta y usarlo para guiar el diseño de la convolución
+equivalente{[}cite: 478{]}. {[}cite\_start{]}Por ejemplo, el píxel
+superior izquierdo de la entrada de la convolución directa solo
+contribuye al píxel superior izquierdo de la salida, el píxel superior
+derecho solo está conectado al píxel de salida superior derecho, y así
+sucesivamente{[}cite: 479{]}. {[}cite\_start{]}Para mantener el mismo
+patrón de conectividad en la convolución equivalente, es necesario
+rellenar la entrada con ceros de tal manera que la primera aplicación
+(superior izquierda) del núcleo solo toque el píxel superior izquierdo,
+es decir, el relleno tiene que ser igual al tamaño del núcleo menos
+uno{[}cite: 480{]}.
+
+Procediendo de la misma manera, es posible determinar observaciones
+similares para los otros elementos de la imagen, dando lugar a la
+siguiente relación:
+
+\textbf{Relación 8.} Una convolución descrita por \(s = 1, p = 0\) y
+\(k\) tiene una convolución transpuesta asociada descrita por
+\(k' = k, s' = s\) y \(p' = k - 1\) y su tamaño de salida es
+
+\[o' = i' + (k - 1).\]
+
+{[}cite\_start{]}Curiosamente, esto corresponde a una convolución
+completamente rellenada con pasos unitarios{[}cite: 485{]}.
+
+{[}cite\_start{]}\textsuperscript{3}Tenga en cuenta que la convolución
+transpuesta no garantiza que recupere la entrada en sí, ya que no se
+define como la inversa de la convolución, sino que simplemente devuelve
+un mapa de características que tiene el mismo ancho y alto{[}cite:
+480{]}.
+
+{[}cite\_start{]}\textsuperscript{4}Tenga en cuenta que, aunque es
+equivalente a aplicar la matriz transpuesta, esta visualización agrega
+muchas multiplicaciones por cero en forma de relleno de ceros{[}cite:
+481{]}. {[}cite\_start{]}Esto se hace aquí con fines ilustrativos, pero
+es ineficiente, y las implementaciones de \emph{software} normalmente no
+realizarán las multiplicaciones inútiles por cero{[}cite: 482{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{4.4 Relleno de ceros, pasos unitarios,
+traspuesta}\label{relleno-de-ceros-pasos-unitarios-traspuesta}
+
+{[}cite\_start{]}Sabiendo que la transpuesta de una convolución sin
+relleno es equivalente a convolucionar una entrada rellenada con ceros,
+sería razonable suponer que la transpuesta de una convolución rellenada
+con ceros es equivalente a convolucionar una entrada rellenada con menos
+ceros{[}cite: 487{]}. {[}cite\_start{]}De hecho, es el caso, como se
+muestra en la Figura 4.2 para \(i = 5, k = 4\) y \(p = 2\){[}cite:
+487{]}.
+
+Formalmente, la siguiente relación se aplica a las convoluciones
+rellenadas con ceros:
+
+\textbf{Relación 9.} Una convolución descrita por \(s = 1, k\) y \(p\)
+tiene una convolución transpuesta asociada descrita por
+\(k' = k, s' = s\) y \(p' = k - p - 1\) y su tamaño de salida es
+
+\[o' = i' + (k - 1) - 2p.\]
+
+\paragraph{\texorpdfstring{4.4.1 Relleno a la mitad (\emph{Half (same)
+padding}),
+traspuesta}{4.4.1 Relleno a la mitad (Half (same) padding), traspuesta}}\label{relleno-a-la-mitad-half-same-padding-traspuesta}
+
+{[}cite\_start{]}Aplicando el mismo razonamiento inductivo que antes, es
+razonable esperar que la convolución equivalente de la transpuesta de
+una convolución con relleno a la mitad sea ella misma una convolución
+con relleno a la mitad, dado que el tamaño de salida de una convolución
+con relleno a la mitad es el mismo que su tamaño de entrada{[}cite:
+489{]}. Por lo tanto, se aplica la siguiente relación:
+
+\textbf{Relación 10.} Una convolución descrita por
+\(k = 2n + 1, n \in \mathbb{N}, s = 1\) y
+\(p = \lfloor k/2 \rfloor = n\) tiene una convolución transpuesta
+asociada descrita por \(k' = k, s' = s\) y \(p' = p\) y su tamaño de
+salida es
+
+\[
+\begin{aligned}
+o' &= i' + (k - 1) - 2p \\
+&= i' + 2n - 2n \\
+&= i'.
+\end{aligned}
+\]
+
+{[}cite\_start{]}La Figura 4.3 proporciona un ejemplo para
+\(i = 5, k = 3\) y (por lo tanto) \(p = 1\){[}cite: 490{]}.
+
+\paragraph{\texorpdfstring{4.4.2 Relleno completo (\emph{Full padding}),
+traspuesta}{4.4.2 Relleno completo (Full padding), traspuesta}}\label{relleno-completo-full-padding-traspuesta}
+
+Sabiendo que la convolución equivalente de la transpuesta de una
+convolución sin relleno implica relleno completo, no es sorprendente que
+la equivalente de la transpuesta de una convolución completamente
+rellenada sea una convolución sin relleno:
+
+\textbf{Relación 11.} Una convolución descrita por \(s = 1, k\) y
+\(p = k - 1\) tiene una convolución transpuesta asociada descrita por
+\(k' = k, s' = s\) y \(p' = 0\) y su tamaño de salida es
+
+\[
+\begin{aligned}
+o' &= i' + (k - 1) - 2p \\
+&= i' - (k - 1)
+\end{aligned}
+\]
+
+{[}cite\_start{]}La Figura 4.4 proporciona un ejemplo para
+\(i = 5, k = 3\) y (por lo tanto) \(p = 2\){[}cite: 498{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+{[}cite\_start{]}\textbf{Figura 4.1:} La transpuesta de convolucionar un
+núcleo de \(3 \times 3\) sobre una entrada de \(4 \times 4\) utilizando
+pasos unitarios (es decir, \(i = 4, k = 3, s = 1\) y \(p = 0\)){[}cite:
+491{]}. {[}cite\_start{]}Es equivalente a convolucionar un núcleo de
+\(3 \times 3\) sobre una entrada de \(2 \times 2\) rellenada con un
+borde de ceros de \(2 \times 2\) utilizando pasos unitarios (es decir,
+\(i' = 2, k' = k, s' = 1\) y \(p' = 2\)){[}cite: 492{]}.
+
+{[}cite\_start{]}\textbf{Figura 4.2:} La transpuesta de convolucionar un
+núcleo de \(4 \times 4\) sobre una entrada de \(5 \times 5\) rellenada
+con un borde de ceros de \(2 \times 2\) utilizando pasos unitarios (es
+decir, \(i = 5, k = 4, s = 1\) y \(p = 2\)){[}cite: 493{]}.
+{[}cite\_start{]}Es equivalente a convolucionar un núcleo de
+\(4 \times 4\) sobre una entrada de \(6 \times 6\) rellenada con un
+borde de ceros de \(1 \times 1\) utilizando pasos unitarios (es decir,
+\(i' = 6, k' = k, s' = 1\) y \(p' = 1\)){[}cite: 494{]}.
+
+{[}cite\_start{]}\textbf{Figura 4.3:} La transpuesta de convolucionar un
+núcleo de \(3 \times 3\) sobre una entrada de \(5 \times 5\) utilizando
+relleno a la mitad y pasos unitarios (es decir, \(i = 5, k = 3, s = 1\)
+y \(p = 1\)){[}cite: 495{]}. {[}cite\_start{]}Es equivalente a
+convolucionar un núcleo de \(3 \times 3\) sobre una entrada de
+\(5 \times 5\) utilizando relleno a la mitad y pasos unitarios (es
+decir, \(i' = 5, k' = k, s' = 1\) y \(p' = 1\)){[}cite: 496{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{4.5 Sin relleno de ceros, pasos no unitarios,
+traspuesta}\label{sin-relleno-de-ceros-pasos-no-unitarios-traspuesta}
+
+{[}cite\_start{]}Utilizando el mismo tipo de lógica inductiva que para
+las convoluciones rellenadas con ceros, se podría esperar que la
+transpuesta de una convolución con \(s > 1\) involucre una convolución
+equivalente con \(s < 1\){[}cite: 499{]}. {[}cite\_start{]}Como se
+explicará, esta es una intuición válida, por lo que las convoluciones
+transpuestas a veces se denominan \textbf{convoluciones con pasos
+fraccionados}{[}cite: 499{]}.
+
+{[}cite\_start{]}La Figura 4.5 proporciona un ejemplo para
+\(i = 5, k = 3\) y \(s = 2\) que ayuda a comprender lo que implican los
+pasos fraccionados: \textbf{se insertan ceros entre las unidades de
+entrada}, lo que hace que el núcleo se mueva a un ritmo más lento que
+con los pasos unitarios\textsuperscript{5}{[}cite: 500{]}.
+{[}cite\_start{]}Por el momento, se asumirá que la convolución no está
+rellenada (\(p = 0\)) y que su tamaño de entrada \(i\) es tal que
+\(i - k\) es un múltiplo de \(s\){[}cite: 501{]}. En ese caso, se cumple
+la siguiente relación:
+
+\textbf{Relación 12.} Una convolución descrita por \(p = 0, k\) y \(s\)
+y cuyo tamaño de entrada es tal que \(i - k\) es un múltiplo de \(s\),
+tiene una convolución transpuesta asociada descrita por
+\(\tilde{i}', k' = k, s' = 1\) y \(p' = k - 1\), donde \(\tilde{i}'\) es
+el tamaño de la entrada estirada obtenida al agregar \(s - 1\) ceros
+entre cada unidad de entrada, y su tamaño de salida es
+
+\[o' = s(i' - 1) + k.\]
+
+{[}cite\_start{]}\textsuperscript{5}Hacer esto es ineficiente y las
+implementaciones en el mundo real evitan multiplicaciones inútiles por
+cero, pero conceptualmente es cómo se puede pensar en la transpuesta de
+una convolución con pasos{[}cite: 503{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{4.6 Relleno de ceros, pasos no unitarios,
+traspuesta}\label{relleno-de-ceros-pasos-no-unitarios-traspuesta}
+
+Cuando el tamaño de entrada de la convolución \(i\) es tal que
+\(i + 2p - k\) es un múltiplo de \(s\), el análisis se puede extender al
+caso rellenado con ceros combinando la Relación 9 y la Relación 12:
+
+\textbf{Relación 13.} Una convolución descrita por \(k, s\) y \(p\) y
+cuyo tamaño de entrada \(i\) es tal que \(i + 2p - k\) es un múltiplo de
+\(s\) tiene una convolución transpuesta asociada descrita por
+\(\tilde{i}', k' = k, s' = 1\) y \(p' = k - p - 1\), donde
+\(\tilde{i}'\) es el tamaño de la entrada estirada obtenida al agregar
+\(s - 1\) ceros entre cada unidad de entrada, y su tamaño de salida es
+
+\[o' = s(i' - 1) + k - 2p.\]
+
+{[}cite\_start{]}La Figura 4.6 proporciona un ejemplo para
+\(i = 5, k = 3, s = 2\) y \(p = 1\){[}cite: 512{]}.
+
+{[}cite\_start{]}La restricción en el tamaño de la entrada \(i\) se
+puede relajar introduciendo otro parámetro \(a \in \{0, \dots, s - 1\}\)
+que permite distinguir entre los \(s\) casos diferentes que conducen al
+mismo \(i'\){[}cite: 513{]}:
+
+\textbf{Relación 14.} Una convolución descrita por \(k, s\) y \(p\)
+tiene una convolución transpuesta asociada descrita por
+\(a, \tilde{i}', k' = k, s' = 1\) y \(p' = k - p - 1\), donde
+\(\tilde{i}'\) es el tamaño de la entrada estirada obtenida al agregar
+\(s - 1\) ceros entre cada unidad de entrada, y
+\(a = (i + 2p - k) \mod s\) representa el número de ceros agregados a
+los bordes inferior y derecho de la entrada, y su tamaño de salida es
+
+\[o' = s(i' - 1) + a + k - 2p.\]
+
+{[}cite\_start{]}La Figura 4.7 proporciona un ejemplo para
+\(i = 6, k = 3, s = 2\) y \(p = 1\){[}cite: 515{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+{[}cite\_start{]}\textbf{Figura 4.4:} La transpuesta de convolucionar un
+núcleo de \(3 \times 3\) sobre una entrada de \(5 \times 5\) utilizando
+relleno completo y pasos unitarios (es decir, \(i = 5, k = 3, s = 1\) y
+\(p = 2\)){[}cite: 504{]}. {[}cite\_start{]}Es equivalente a
+convolucionar un núcleo de \(3 \times 3\) sobre una entrada de
+\(7 \times 7\) utilizando pasos unitarios (es decir,
+\(i' = 7, k' = k, s' = 1\) y \(p' = 0\)){[}cite: 505{]}.
+
+{[}cite\_start{]}\textbf{Figura 4.5:} La transpuesta de convolucionar un
+núcleo de \(3 \times 3\) sobre una entrada de \(5 \times 5\) utilizando
+pasos de \(2 \times 2\) (es decir, \(i = 5, k = 3, s = 2\) y
+\(p = 0\)){[}cite: 506{]}. {[}cite\_start{]}Es equivalente a
+convolucionar un núcleo de \(3 \times 3\) sobre una entrada de
+\(2 \times 2\) (con 1 cero insertado entre entradas) rellenada con un
+borde de ceros de \(2 \times 2\) utilizando pasos unitarios (es decir,
+\(i' = 2, \tilde{i}' = 3, k' = k, s' = 1\) y \(p' = 2\)){[}cite: 507{]}.
+
+{[}cite\_start{]}\textbf{Figura 4.6:} La transpuesta de convolucionar un
+núcleo de \(3 \times 3\) sobre una entrada de \(5 \times 5\) rellenada
+con un borde de ceros de \(1 \times 1\) utilizando pasos de
+\(2 \times 2\) (es decir, \(i = 5, k = 3, s = 2\) y \(p = 1\)){[}cite:
+508{]}. {[}cite\_start{]}Es equivalente a convolucionar un núcleo de
+\(3 \times 3\) sobre una entrada de \(3 \times 3\) (con 1 cero insertado
+entre entradas) rellenada con un borde de ceros de \(1 \times 1\)
+utilizando pasos unitarios (es decir,
+\(i' = 3, \tilde{i}' = 5, k' = k, s' = 1\) y \(p' = 1\)){[}cite: 509{]}.
+
+{[}cite\_start{]}\textbf{Figura 4.7:} La transpuesta de convolucionar un
+núcleo de \(3 \times 3\) sobre una entrada de \(6 \times 6\) rellenada
+con un borde de ceros de \(1 \times 1\) utilizando pasos de
+\(2 \times 2\) (es decir, \(i = 6, k = 3, s = 2\) y \(p = 1\)){[}cite:
+516{]}. {[}cite\_start{]}Es equivalente a convolucionar un núcleo de
+\(3 \times 3\) sobre una entrada de \(2 \times 2\) (con 1 cero insertado
+entre entradas) rellenada con un borde de ceros de \(1 \times 1\) (con
+un borde adicional de tamaño 1 agregado a los bordes inferior y derecho)
+utilizando pasos unitarios (es decir,
+\(i' = 3, \tilde{i}' = 5, a = 1, k' = k, s' = 1\) y \(p' = 1\)){[}cite:
+517{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Capítulo 5 Convoluciones
+misceláneas}\label{capuxedtulo-5-convoluciones-misceluxe1neas}
+
+\subsubsection{5.1 Convoluciones
+dilatadas}\label{convoluciones-dilatadas}
+
+{[}cite\_start{]}Los lectores familiarizados con la literatura de
+aprendizaje profundo pueden haber notado el término
+``\textbf{convoluciones dilatadas}'' (o ``\textbf{convoluciones \emph{à
+trous}}'', de la expresión francesa \emph{convolutions à trous})
+aparecer en artículos recientes{[}cite: 519{]}. {[}cite\_start{]}Aquí
+intentamos proporcionar una comprensión intuitiva de las convoluciones
+dilatadas{[}cite: 520{]}. Para una descripción más profunda y para
+comprender en qué contextos se aplican, consulte Chen et al.~(2014);
+{[}cite\_start{]}Yu y Koltun (2015){[}cite: 522{]}.
+
+{[}cite\_start{]}Las convoluciones dilatadas ``\textbf{inflan}'' el
+núcleo insertando espacios entre los elementos del núcleo{[}cite:
+523{]}. {[}cite\_start{]}La ``\textbf{tasa}'' de dilatación está
+controlada por un hiperparámetro adicional \(d\){[}cite: 524{]}.
+{[}cite\_start{]}Las implementaciones pueden variar, pero generalmente
+se insertan \(d - 1\) espacios entre los elementos del núcleo, de modo
+que \(d = 1\) corresponde a una convolución regular{[}cite: 525{]}.
+
+{[}cite\_start{]}Las convoluciones dilatadas se utilizan para
+\textbf{aumentar de forma económica el campo receptivo} de las unidades
+de salida sin aumentar el tamaño del núcleo {[}cite:
+526{]}{[}cite\_start{]}, lo que es especialmente efectivo cuando se
+apilan múltiples convoluciones dilatadas una tras otra{[}cite: 526{]}.
+Para un ejemplo concreto, consulte Oord et al.~(2016){[}cite\_start{]},
+en el que el modelo WaveNet propuesto implementa un modelo generativo
+autorregresivo para audio sin procesar que utiliza convoluciones
+dilatadas para \textbf{condicionar nuevos fotogramas de audio en un gran
+contexto de fotogramas de audio pasados}{[}cite: 527{]}.
+
+{[}cite\_start{]}Para comprender la relación que une la tasa de
+dilatación \(d\) y el tamaño de salida \(o\), es útil pensar en el
+impacto de \(d\) en el \textbf{tamaño efectivo del núcleo}{[}cite:
+528{]}. Un núcleo de tamaño \(k\) dilatado por un factor \(d\) tiene un
+tamaño efectivo
+
+\[\hat{k} = k + (k - 1)(d - 1).\]
+
+Esto se puede combinar con la Relación 6 para formar la siguiente
+relación para las convoluciones dilatadas:
+
+\textbf{Relación 15.} Para cualquier \(i, k, p\) y \(s\), y para una
+tasa de dilatación \(d\),
+
+\[o = \left\lfloor \frac{i + 2p - k - (k - 1)(d - 1)}{s} \right\rfloor + 1.\]
+
+{[}cite\_start{]}La Figura 5.1 proporciona un ejemplo para
+\(i = 7, k = 3\) y \(d = 2\){[}cite: 531{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+{[}cite\_start{]}\textbf{Figura 5.1:} (Convolución dilatada)
+Convolucionar un núcleo de \(3 \times 3\) sobre una entrada de
+\(7 \times 7\) con un factor de dilatación de 2 (es decir,
+\(i = 7, k = 3, d = 2, s = 1\) y \(p = 0\)){[}cite: 530{]}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Bibliography styles}\label{bibliography-styles}
+
+Here are two sample references: \citet{Feynman1963118}
+\citet{Dirac1953888}.
+
+By default, natbib will be used with the \texttt{authoryear} style, set
+in \texttt{classoption} variable in YAML. You can sets extra options
+with \texttt{natbiboptions} variable in YAML header. Example
+
+\begin{verbatim}
+natbiboptions: longnamesfirst,angle,semicolon
+\end{verbatim}
+
+There are various more specific bibliography styles available at
+\url{https://support.stmdocs.in/wiki/index.php?title=Model-wise_bibliographic_style_files}.
+To use one of these, add it in the header using, for example,
+\texttt{biblio-style:\ model1-num-names}.
+
+\subsection{Using CSL}\label{using-csl}
+
+If \texttt{cite-method} is set to \texttt{citeproc} in
+\texttt{elsevier\_article()}, then pandoc is used for citations instead
+of \texttt{natbib}. In this case, the \texttt{csl} option is used to
+format the references. By default, this template will provide an
+appropriate style, but alternative \texttt{csl} files are available from
+\url{https://www.zotero.org/styles?q=elsevier}. These can be downloaded
+and stored locally, or the url can be used as in the example header.
+
+\section{Equations}\label{equations}
+
+Here is an equation: \[ 
+  f_{X}(x) = \left(\frac{\alpha}{\beta}\right)
+  \left(\frac{x}{\beta}\right)^{\alpha-1}
+  e^{-\left(\frac{x}{\beta}\right)^{\alpha}}; 
+  \alpha,\beta,x > 0 .
+\]
+
+Inline equations work as well: \(\sum_{i = 2}^\infty\{\alpha_i^\beta\}\)
+
+\section{Figures and tables}\label{figures-and-tables}
+
+Figure~\ref{fig-meaningless} is generated using an R chunk.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio]{arXiv_files/figure-pdf/fig-meaningless-1.pdf}
+
+}
+
+\caption{\label{fig-meaningless}A meaningless scatterplot}
+
+\end{figure}%
+
+\section{Tables coming from R}\label{tables-coming-from-r}
+
+Tables can also be generated using R chunks, as shown in
+Table~\ref{tbl-simple} example.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\FunctionTok{head}\NormalTok{(mtcars)[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{4}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lrrrr@{}}
+
+\caption{\label{tbl-simple}Caption centered above table}
+
+\tabularnewline
+
+\toprule\noalign{}
+& mpg & cyl & disp & hp \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Mazda RX4 & 21.0 & 6 & 160 & 110 \\
+Mazda RX4 Wag & 21.0 & 6 & 160 & 110 \\
+Datsun 710 & 22.8 & 4 & 108 & 93 \\
+Hornet 4 Drive & 21.4 & 6 & 258 & 110 \\
+Hornet Sportabout & 18.7 & 8 & 360 & 175 \\
+Valiant & 18.1 & 6 & 225 & 105 \\
+
+\end{longtable}
+
+
+\renewcommand\refname{References}
+  \bibliography{bibliography.bib}
+
+
+
+\end{document}

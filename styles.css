@@ -1,0 +1,89 @@
+/* ── Tipografía ─────────────────────────────────────────────────────────── */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.7;
+  color: #2c3e50;
+}
+
+h1, h2, h3 {
+  color: #1a252f;
+  font-weight: 700;
+}
+
+h1 { border-bottom: 3px solid #3498DB; padding-bottom: 0.3em; }
+h2 { border-left: 4px solid #3498DB; padding-left: 0.6em; }
+
+/* ── Bloques de código ──────────────────────────────────────────────────── */
+pre {
+  background: #f8f9fa !important;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  padding: 1em;
+  overflow-x: auto;
+}
+
+code {
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  color: #2c3e50;
+}
+
+/* Código en línea */
+p code, li code {
+  background: #f1f3f5;
+  color: #d63384;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Resaltado de sintaxis - mantener colores claros */
+pre .kw, pre .fu, pre .cn, pre .st {
+  /* Palabras clave, funciones, constantes, strings */
+}
+
+/* ── Tablas ─────────────────────────────────────────────────────────────── */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+thead tr {
+  background: #3498DB;
+  color: white;
+}
+
+th, td {
+  padding: 0.6em 1em;
+  border: 1px solid #dde;
+  text-align: center;
+}
+
+tbody tr:nth-child(even) { background: #f0f4f8; }
+tbody tr:hover { background: #dbeafe; }
+
+/* ── Callouts / alertas ─────────────────────────────────────────────────── */
+blockquote {
+  border-left: 4px solid #3498DB;
+  background: #EBF5FB;
+  padding: 0.8em 1em;
+  border-radius: 0 6px 6px 0;
+  margin: 1em 0;
+}
+
+/* ── Figuras ────────────────────────────────────────────────────────────── */
+.plotly-graph-div {
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+  margin: 1em 0;
+}
+
+/* ── TOC ────────────────────────────────────────────────────────────────── */
+#TOC {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1em;
+}

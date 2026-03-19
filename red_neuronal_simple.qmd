@@ -1,0 +1,1407 @@
+---
+title: "Aprendizaje de una Red Neuronal Simple"
+subtitle: "Descenso por Gradiente paso a paso"
+author: "Recurso Pedagógico"
+date: today
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-title: "Contenido"
+    code-fold: false
+    code-tools: true
+    highlight-style: github
+    fig-width: 9
+    fig-height: 6
+    embed-resources: true
+    css: styles.css
+  pdf:
+    documentclass: article
+    geometry: margin=2.5cm
+    fontsize: 11pt
+    toc: true
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+---
+
+# Introducción
+
+Este documento es un recurso pedagógico interactivo para comprender cómo **aprende una red neuronal artificial simple**. Utilizaremos el problema de la **compuerta lógica AND** como caso de estudio, el cual tiene la siguiente tabla de verdad:
+
+| Entrada $x_1$ | Entrada $x_2$ | Salida deseada $y$ |
+|:---:|:---:|:---:|
+| 0 | 0 | 0 |
+| 0 | 1 | 0 |
+| 1 | 0 | 0 |
+| 1 | 1 | 1 |
+
+La red neuronal debe **aprender** estos patrones ajustando sus pesos mediante el algoritmo de **Descenso por Gradiente**.
+
+---
+
+# 1. Arquitectura de la Red Neuronal
+
+## 1.1 Estructura (2 → 1)
+
+La red más simple posible tiene **dos entradas** y **una neurona de salida**:
+
+```{mermaid}
+flowchart LR
+    X1(["x₁\n(Entrada 1)"]):::input
+    X2(["x₂\n(Entrada 2)"]):::input
+    N(["Neurona\nOutput 3\n σ(z)"]):::neuron
+    OUT(["ŷ = a₃\n(Salida)"]):::output
+
+    X1 -- "w₁" --> N
+    X2 -- "w₂" --> N
+    B(["b\n(Bias)"]):::bias --> N
+    N --> OUT
+
+    classDef input fill:#4A90D9,stroke:#2C6FAC,color:white,rx:50
+    classDef neuron fill:#E8A838,stroke:#C4842A,color:white
+    classDef output fill:#5CB85C,stroke:#3D8B3D,color:white
+    classDef bias fill:#9B59B6,stroke:#7D3C98,color:white
+```
+
+## 1.2 Ecuación de la neurona
+
+La neurona realiza dos operaciones:
+
+**Paso 1 — Suma ponderada (pre-activación):**
+$$z = b + w_1 \cdot x_1 + w_2 \cdot x_2$$
+
+**Paso 2 — Función de activación sigmoide:**
+$$\hat{y} = a = \sigma(z) = \frac{1}{1 + e^{-z}}$$
+
+La función sigmoide comprime cualquier valor real al intervalo $(0, 1)$, lo que la hace ideal para salidas que representan probabilidades.
+
+---
+
+# 2. Función de Pérdida
+
+## 2.1 Error cuadrático medio (MSE)
+
+Para medir qué tan lejos está la predicción $\hat{y}$ del valor real $y$, usamos el **Error Cuadrático**:
+
+$$C = (a - y)^2$$
+
+El **costo total** sobre todos los ejemplos de entrenamiento es la suma:
+
+$$C_{total} = \sum_{i=1}^{N} (a_i - y_i)^2$$
+
+> 💡 **Intuición:** Si $a = y$ (predicción perfecta), el costo es 0. Cuanto mayor sea el error, mayor será el costo. El objetivo del entrenamiento es **minimizar** esta función.
+
+---
+
+# 3. Cálculo del Gradiente
+
+## 3.1 Regla de la cadena
+
+Para actualizar los pesos necesitamos saber **en qué dirección decrece el error**. Usamos la **regla de la cadena** del cálculo diferencial:
+
+$$\frac{\partial C}{\partial w} = \frac{\partial C}{\partial a} \cdot \frac{\partial a}{\partial z} \cdot \frac{\partial z}{\partial w}$$
+
+$$\frac{\partial C}{\partial b} = \frac{\partial C}{\partial a} \cdot \frac{\partial a}{\partial z} \cdot \frac{\partial z}{\partial b}$$
+
+## 3.2 Grafo computacional
+
+La siguiente figura muestra la estructura general de una **neurona artificial** con $n$ entradas $x_0, x_1, \ldots, x_n$, sus pesos $w_0, w_1, \ldots, w_n$, la suma ponderada $z = \mathbf{w}^\top \mathbf{x}$ y la función de activación $\sigma(z)$ que produce la salida $\hat{y}$.
+
+> **Nota sobre escalares vs. vectores:** En el ejemplo simple de la compuerta AND, cada entrada $x_j$ es un **escalar** (un valor individual, como 0 o 1). En este caso:
+>
+> - Entrada de un ejemplo: $\mathbf{x} \in \mathbb{R}^n$ (vector con $n$ características)
+> - Cada componente: $x_j \in \mathbb{R}$ (escalar), donde $j = 1, \ldots, n$
+>
+> En el caso general de **mini-batches**, procesamos $m$ ejemplos simultáneamente:
+>
+> - Batch de entradas: $\mathbf{X} \in \mathbb{R}^{m \times n}$ (matriz: $m$ ejemplos $\times$ $n$ características)
+> - Cada fila $i$: $\mathbf{x}^{(i)} \in \mathbb{R}^n$ (vector de características del ejemplo $i$)
+> - Cada componente: $x_{i,j} \in \mathbb{R}$ (escalar: ejemplo $i$, característica $j$)
+>
+> Ambas interpretaciones son válidas: la primera como caso particular con $m=1$, y la segunda como la forma general.
+
+### Notación de índices: ejemplos y características
+
+Para entender cómo se organizan los datos, veamos la estructura de una **matriz de características** $\mathbf{X} \in \mathbb{R}^{m \times n}$:
+
+```
+            Características (j)
+           j=1    j=2    j=3    ...  j=n
+        ┌─────────────────────────────────────┐
+i=1    │ x₁,₁   x₁,₂   x₁,₃  ...  x₁,ₙ  │  ← Ejemplo 1 (vector x⁽¹⁾)
+i=2    │ x₂,₁   x₂,₂   x₂,₃  ...  x₂,ₙ  │  ← Ejemplo 2 (vector x⁽²⁾)
+i=3    │ x₃,₁   x₃,₂   x₃,₃  ...  x₃,ₙ  │  ← Ejemplo 3 (vector x⁽³⁾)
+...    │  ...    ...    ...   ...   ...  │
+i=m    │ xₘ,₁   xₘ,₂   xₘ,₃  ...  xₘ,ₙ  │  ← Ejemplo m (vector x⁽ᵐ⁾)
+        └─────────────────────────────────────┘
+Ejemplos (i)
+```
+
+**Interpretación de los índices:**
+
+- **Índice $i$** (filas): Identifica el **ejemplo** o muestra del dataset ($i = 1, \ldots, m$)
+- **Índice $j$** (columnas): Identifica la **característica** o variable de entrada ($j = 1, \ldots, n$)
+
+**Ejemplos concretos:**
+
+| Notación | Tipo | Significado |
+|----------|------|-------------|
+| $x_{2,3}$ | Escalar | Valor de la característica $j{=}3$ del ejemplo $i{=}2$ |
+| $\mathbf{x}^{(i)}$ | Vector $\in \mathbb{R}^n$ | Todas las características del ejemplo $i$ (fila $i$ de $\mathbf{X}$) |
+| $\mathbf{X}_{:,j}$ | Vector $\in \mathbb{R}^m$ | La característica $j$ de todos los ejemplos (columna $j$ de $\mathbf{X}$) |
+
+Esta notación es fundamental para entender cómo se propagan los datos a través de la red neuronal.
+
+```{python}
+#| label: fig-neurona
+#| fig-cap: "Neurona artificial general: $z = \\mathbf{w}^\\top \\mathbf{x}$ y salida $\\hat{y} = \\sigma(z)$"
+#| echo: false
+
+import subprocess, tempfile, os, shutil
+from IPython.display import Image, display
+
+tikz_neurona = r"""
+\documentclass[tikz,border=14pt]{standalone}
+\usetikzlibrary{positioning,shapes.geometric,fit,arrows.meta,calc}
+\usepackage{amsmath}
+
+\begin{document}
+\begin{tikzpicture}[
+    >=LaTeX,
+    node/.style={
+        circle,
+        minimum width=2.25em,
+        draw,
+        fill=gray!10,
+        thick
+    },
+    arrow/.style={
+        -latex,
+        thick
+    }
+]
+
+    % Nodos de entrada
+    \foreach \x in {0,1,2}
+        \node[node] (x\x) at (0,-\x*1.25) {$x_{\x}$};
+    \node[node] (xm) at (0,-4*1.25) {$x_{n}$};
+
+    % Puntos suspensivos entre x2 y xn
+    \path (x2) -- (xm) node[pos=0.35, scale=2] {\vdots};
+
+    % Nodo suma
+    \node[node] (z) at (2.5,-2.5) {$z$};
+
+    % Nodo salida
+    \node[node, right of=z, node distance=2.5cm] (yhat) {$\hat{y}$};
+
+    % Flechas entrada → suma con pesos
+    \draw[arrow] (x0) -- (z) node[midway, fill=white, inner sep=1.5pt] {$w_0$};
+    \foreach \x in {1,...,2}
+        \draw[arrow] (x\x) -- (z) node[midway, fill=white, inner sep=1.5pt] {$w_{\x}$};
+    \draw[arrow] (xm) -- (z) node[midway, fill=white, inner sep=1.5pt] {$w_{n}$};
+
+    % Flecha suma → salida
+    \draw[arrow] (z) -- (yhat) node[midway, fill=white, inner sep=1.5pt] {$\sigma(z)$};
+
+    % Ecuación
+    \node[above of=z, node distance=1.2cm] {$z = \mathbf{w}^\top \mathbf{x}$};
+
+\end{tikzpicture}
+\end{document}
+"""
+
+with tempfile.TemporaryDirectory() as tmpdir:
+    tex_path = os.path.join(tmpdir, "neurona.tex")
+    pdf_path = os.path.join(tmpdir, "neurona.pdf")
+    png_out  = "neurona_general.png"
+
+    with open(tex_path, "w") as f:
+        f.write(tikz_neurona)
+
+    subprocess.run(
+        ["pdflatex", "-interaction=nonstopmode", "-output-directory", tmpdir, tex_path],
+        capture_output=True, check=True
+    )
+    subprocess.run(
+        ["pdftoppm", "-png", "-r", "400", "-singlefile", pdf_path,
+         os.path.join(tmpdir, "neurona_out")],
+        capture_output=True, check=True
+    )
+    shutil.copy(os.path.join(tmpdir, "neurona_out.png"), png_out)
+
+display(Image(filename="neurona_general.png", width=400))
+```
+
+A continuación, el **grafo computacional completo** descompone cada operación de esta neurona en pasos elementales. Las flechas sólidas representan el *forward pass* y las flechas discontinuas el *backpropagation* (cálculo de gradientes mediante la regla de la cadena).
+
+```{python}
+#| label: fig-grafo-computacional-completo
+#| fig-cap: "Grafo computacional completo: red neuronal 2 entradas → 1 salida"
+#| echo: false
+
+import subprocess, tempfile, os, shutil
+from IPython.display import Image, display
+
+tikz_code = r"""
+\documentclass[tikz,border=14pt]{standalone}
+\usetikzlibrary{positioning,shapes.geometric,fit,shapes,arrows.meta,calc,backgrounds}
+\usepackage{amsmath}
+
+\begin{document}
+\begin{tikzpicture}[
+    scale=1.8, transform shape,
+    >=LaTeX,
+    var/.style={circle, minimum width=2.5em, draw=orange!60!black,
+                fill=orange!20, thick, font=\large},
+    op/.style={rectangle, rounded corners=4pt, minimum width=2.6em,
+               minimum height=1.9em, draw=blue!50!black, fill=blue!12,
+               thick, font=\large},
+    res/.style={circle, minimum width=2.5em, draw=green!50!black,
+                fill=green!12, thick, font=\large},
+    target/.style={circle, minimum width=2.5em, draw=gray!60,
+                   fill=gray!10, thick, font=\large},
+    arrow/.style={-{Latex[length=3.5mm, width=2.5mm]}, thick, black!80},
+    backprop/.style={-{Latex[length=3.5mm, width=2.5mm]}, dashed, red!70!black, thick},
+    bplabel/.style={font=\footnotesize, text=red!70!black, fill=white,
+                    inner sep=1.5pt, rounded corners=1pt},
+    fwlabel/.style={font=\small, black}
+]
+
+% --- Rama superior: x1, w1 → (·) → p1 ---
+\node[var] (x1)   at (0,    3.5)  {$x_1$};
+\node[var] (w1)   at (3.5,  3.5)  {$w_1$};
+\node[op]  (mul1) at (7.0,  3.5)  {$\cdot$};
+\node[var] (p1)   at (10.0, 3.5)  {$p_1$};
+
+% --- Rama inferior: x2, w2 → (·) → p2 ---
+\node[var] (x2)   at (0,    0)    {$x_2$};
+\node[var] (w2)   at (3.5,  0)    {$w_2$};
+\node[op]  (mul2) at (7.0,  0)    {$\cdot$};
+\node[var] (p2)   at (10.0, 0)    {$p_2$};
+
+% --- Flujo central: + → z → σ → a → − → u → (·)² → C ---
+\node[op]  (add)  at (13.0, 0)    {$+$};
+\node[var] (z)    at (16.0, 0)    {$z$};
+\node[op]  (sig)  at (19.0, 0)    {$\sigma$};
+\node[var] (a)    at (22.0, 0)    {$a$};
+\node[op]  (sub)  at (25.0, 0)    {$-$};
+\node[var] (u)    at (28.0, 0)    {$u$};
+\node[op]  (sq)   at (31.0, 0)    {$(\cdot)^2$};
+\node[res] (C)    at (34.0, 0)    {$C$};
+
+% --- Fila inferior: b ---
+\node[var] (b)    at (3.5, -3.0)  {$b$};
+
+% --- Etiqueta verdadera ---
+\node[target] (y) at (25.0, 3.0)  {$y$};
+
+% === FORWARD PASS ===
+\draw[arrow] (x1.east) -- (mul1.west);
+\draw[arrow] (w1.east) -- (mul1.west);
+\draw[arrow] (x2.east) -- (mul2.west);
+\draw[arrow] (w2.east) -- (mul2.west);
+
+% Multiplicaciones → productos intermedios
+\draw[arrow] (mul1.east) -- (p1.west)
+    node[midway, above, fwlabel] {$p_1{=}x_1 w_1$};
+\draw[arrow] (mul2.east) -- (p2.west)
+    node[midway, above, fwlabel] {$p_2{=}x_2 w_2$};
+
+% Productos intermedios + b → suma
+\draw[arrow] (p1.east) to[out=0, in=130]
+    (add.north west);
+\draw[arrow] (p2.east) -- (add.west);
+\draw[arrow] (b.east) to[out=0, in=-130]
+    (add.south west);
+
+% Suma → z → sigmoide → a
+\draw[arrow] (add.east) -- (z.west)
+    node[midway, above, fwlabel] {$z{=}p_1{+}p_2{+}b$};
+\draw[arrow] (z.east) -- (sig.west);
+\draw[arrow] (sig.east) -- (a.west)
+    node[midway, above, fwlabel] {$a{=}\sigma(z)$};
+
+% a → resta ← y
+\draw[arrow] (a.east) -- (sub.west);
+\draw[arrow] (y.south) -- (sub.north);
+
+% resta → u → (·)² → C
+\draw[arrow] (sub.east) -- (u.west)
+    node[midway, above, fwlabel] {$u{=}a{-}y$};
+\draw[arrow] (u.east) -- (sq.west);
+\draw[arrow] (sq.east) -- (C.west)
+    node[midway, above, fwlabel] {$C{=}u^2$};
+
+% === BACKPROPAGATION ===
+% [1] C → (·)²
+\draw[backprop] ([yshift=-6pt]C.south west) -- ([yshift=-6pt]sq.south east)
+    node[midway, below=5pt, bplabel]
+    {};
+
+% [2] (·)² → −
+\draw[backprop] ([yshift=-6pt]sq.south west) -- ([yshift=-6pt]sub.south east)
+    node[midway, below=5pt, bplabel]
+    {$\partial C / \partial(a{-}y) = 2u$};
+
+% [3] − → a
+\draw[backprop] ([yshift=-6pt]sub.south west) -- ([yshift=-6pt]a.south east)
+    node[midway, below=5pt, bplabel]
+    {$\partial C / \partial a = 2u \cdot 1 = 2(a{-}y)$};
+
+% [4] − → y
+\draw[backprop] (sub.north east) to[out=50, in=-50]
+    node[bplabel, right=4pt, pos=0.5]
+    {$\partial C / \partial y = 2u \cdot(-1)$}
+    (y.south east);
+
+% [5] a → σ
+\draw[backprop] ([yshift=-6pt]a.south west) -- ([yshift=-6pt]sig.south east)
+    node[midway, below=5pt, bplabel]
+    {};
+
+% [6] σ → z → +
+\draw[backprop] ([yshift=-6pt]sig.south west) -- ([yshift=-6pt]add.south east)
+    node[midway, below=5pt, bplabel]
+    {$\partial C / \partial z = (\partial C / \partial a)\cdot\sigma'(z)$};
+
+% [7] + → p1 (curva subiendo)
+\draw[backprop] (add.north) to[out=130, in=-10]
+    node[bplabel, above=3pt, pos=0.5]
+    {$\partial C / \partial p_1 = \partial C / \partial z \cdot 1$}
+    (p1.east);
+
+% [8] + → p2 (directo por arriba)
+\draw[backprop] ([yshift=6pt]add.west) -- ([yshift=6pt]p2.east)
+    node[midway, above=4pt, bplabel]
+    {$\partial C / \partial p_2 = \partial C / \partial z \cdot 1$};
+
+% [9] + → b (curva bajando)
+\draw[backprop] (add.south) to[out=-130, in=10]
+    node[bplabel, below=3pt, pos=0.5]
+    {$\partial C / \partial b = \partial C / \partial z \cdot 1$}
+    (b.east);
+
+% [10] p1 → (·)1
+\draw[backprop] (p1.west) -- (mul1.east);
+
+% [11] (·)1 → w1 (curva suave por arriba)
+\draw[backprop] (mul1.north west) to[out=150, in=30]
+    node[bplabel, above=4pt, pos=0.5]
+    {$\partial C / \partial w_1 = (\partial C / \partial p_1)\cdot x_1$}
+    (w1.north east);
+
+% [12] (·)1 → x1 (curva suave por abajo)
+\draw[backprop] (mul1.south west) to[out=-150, in=-30]
+    node[bplabel, below=4pt, pos=0.5]
+    {$\partial C / \partial x_1 = (\partial C / \partial p_1)\cdot w_1$}
+    (x1.south east);
+
+% [13] p2 → (·)2
+\draw[backprop] (p2.west) -- (mul2.east);
+
+% [14] (·)2 → w2 (curva suave por arriba)
+\draw[backprop] (mul2.north west) to[out=150, in=30]
+    node[bplabel, above=4pt, pos=0.5]
+    {$\partial C / \partial w_2 = (\partial C / \partial p_2)\cdot x_2$}
+    (w2.north east);
+
+% [15] (·)2 → x2 (curva suave por abajo)
+\draw[backprop] (mul2.south west) to[out=-150, in=-30]
+    node[bplabel, below=4pt, pos=0.5]
+    {$\partial C / \partial x_2 = (\partial C / \partial p_2)\cdot w_2$}
+    (x2.south east);
+
+\end{tikzpicture}
+\end{document}
+"""
+
+with tempfile.TemporaryDirectory() as tmpdir:
+    tex_path = os.path.join(tmpdir, "grafo.tex")
+    pdf_path = os.path.join(tmpdir, "grafo.pdf")
+    png_out  = "grafo_computacional.png"
+
+    with open(tex_path, "w") as f:
+        f.write(tikz_code)
+
+    subprocess.run(
+        ["pdflatex", "-interaction=nonstopmode", "-output-directory", tmpdir, tex_path],
+        capture_output=True, check=True
+    )
+    subprocess.run(
+        ["pdftoppm", "-png", "-r", "400", "-singlefile", pdf_path,
+         os.path.join(tmpdir, "grafo_out")],
+        capture_output=True, check=True
+    )
+    shutil.copy(os.path.join(tmpdir, "grafo_out.png"), png_out)
+
+display(Image(filename="grafo_computacional.png", width=1100))
+```
+
+::: {.callout-note}
+## ¿Por qué el grafo muestra gradientes respecto a $x_1$ y $x_2$?
+
+En esta red de una sola capa, solo necesitamos $\partial C / \partial w_1$, $\partial C / \partial w_2$ y $\partial C / \partial b$ para la actualización de pesos. Los gradientes respecto a las entradas ($\partial C / \partial x_i$) se muestran en el grafo por completitud matemática, pero **no se utilizan** en el entrenamiento, ya que $x_1$ y $x_2$ son datos fijos que no se actualizan.
+
+Sin embargo, en **redes multicapa** (redes profundas), estos gradientes son **esenciales**: lo que en una capa es "entrada" $x_i$, en realidad es la activación $a_j^{(\ell-1)}$ de la capa anterior. El gradiente $\partial C / \partial x_i$ de la capa $\ell$ se convierte en la señal que permite seguir propagando el error hacia las capas anteriores. Sin ese cálculo, la retropropagación se detendría en la primera capa.
+:::
+
+### Lectura del grafo: retropropagación paso a paso
+
+La retropropagación recorre el grafo **de derecha a izquierda** (flechas rojas discontinuas), calculando en cada nodo: *¿cuánto cambia $C$ si muevo esta variable un poquito?* La regla de la cadena dice que el efecto total es el **producto** de las derivadas locales a lo largo del camino.
+
+La siguiente tabla muestra cada paso. La columna izquierda presenta la **regla de la cadena** (forma simbólica) y la derecha la **sustitución concreta** usando las funciones del grafo.
+
+| Paso | Nodo | Regla de la cadena (simbólica) | Sustitución concreta |
+|:---:|:---:|---|---|
+| 1 | $(\cdot)^2$ | $\dfrac{\partial C}{\partial u} = \dfrac{\partial (u^2)}{\partial u}$ | $= 2u$ |
+| 2 | $-$ | $\dfrac{\partial C}{\partial a} = \dfrac{\partial C}{\partial u} \cdot \dfrac{\partial u}{\partial a}$ | $= 2u \cdot 1 = 2(a-y)$ |
+| 3 | $\sigma$ | $\dfrac{\partial C}{\partial z} = \dfrac{\partial C}{\partial a} \cdot \dfrac{\partial a}{\partial z}$ | $= 2(a-y) \cdot \sigma'(z)$ |
+| 4a | $+$ | $\dfrac{\partial C}{\partial p_1} = \dfrac{\partial C}{\partial z} \cdot \dfrac{\partial z}{\partial p_1}$ | $= \dfrac{\partial C}{\partial z} \cdot 1$ |
+| 4b | $+$ | $\dfrac{\partial C}{\partial p_2} = \dfrac{\partial C}{\partial z} \cdot \dfrac{\partial z}{\partial p_2}$ | $= \dfrac{\partial C}{\partial z} \cdot 1$ |
+| 4c | $+$ | $\dfrac{\partial C}{\partial b} = \dfrac{\partial C}{\partial z} \cdot \dfrac{\partial z}{\partial b}$ | $= \dfrac{\partial C}{\partial z} \cdot 1$ |
+| 5a | $(\cdot)$ | $\dfrac{\partial C}{\partial w_1} = \dfrac{\partial C}{\partial p_1} \cdot \dfrac{\partial p_1}{\partial w_1}$ | $= \dfrac{\partial C}{\partial z} \cdot x_1$ |
+| 5b | $(\cdot)$ | $\dfrac{\partial C}{\partial w_2} = \dfrac{\partial C}{\partial p_2} \cdot \dfrac{\partial p_2}{\partial w_2}$ | $= \dfrac{\partial C}{\partial z} \cdot x_2$ |
+
+::: {.callout-tip}
+## Patrón de cada tipo de nodo
+
+- **Potencia** $(\cdot)^2$: multiplica por la derivada local $2u$
+- **Resta** $(-$): copia con signo ($+1$ al minuendo, $-1$ al sustraendo)
+- **Sigmoide** $(\sigma)$: multiplica por $\sigma'(z) = \sigma(z)(1 - \sigma(z))$
+- **Suma** $(+)$: **copia** el gradiente idéntico a cada rama (derivada local $= 1$)
+- **Multiplicación** $(\cdot)$: multiplica por **el otro factor** ($\partial(ab)/\partial a = b$)
+:::
+
+### Resultado final: gradientes de los parámetros entrenables
+
+Sustituyendo todas las derivadas locales a lo largo del camino, obtenemos las expresiones cerradas:
+
+:::: {.columns}
+
+::: {.column width="50%"}
+$$\frac{\partial C}{\partial w_1} = \underbrace{2(a-y)}_{\text{costo}} \cdot \underbrace{\sigma'(z)}_{\text{sigmoide}} \cdot \underbrace{x_1}_{\text{entrada}}$$
+
+$$\frac{\partial C}{\partial w_2} = 2(a-y) \cdot \sigma'(z) \cdot x_2$$
+:::
+
+::: {.column width="50%"}
+$$\frac{\partial C}{\partial b} = \underbrace{2(a-y)}_{\text{costo}} \cdot \underbrace{\sigma'(z)}_{\text{sigmoide}} \cdot \underbrace{1}_{\text{bias}}$$
+:::
+
+::::
+
+
+
+## 3.3 Referencia rápida: derivadas locales de cada nodo
+
+| Nodo | Operación | Derivada local | Valor |
+|:---:|:---:|---|---|
+| $(\cdot)^2$ | $C = u^2$ | $\partial C / \partial u$ | $2u$ |
+| $-$ | $u = a - y$ | $\partial u / \partial a$ ; $\partial u / \partial y$ | $1$ ; $-1$ |
+| $\sigma$ | $a = \sigma(z)$ | $\partial a / \partial z$ | $\sigma(z)(1 - \sigma(z))$ |
+| $+$ | $z = p_1 + p_2 + b$ | $\partial z / \partial p_i$ ; $\partial z / \partial b$ | $1$ ; $1$ |
+| $(\cdot)$ | $p_1 = x_1 w_1$ | $\partial p_1 / \partial w_1$ ; $\partial p_1 / \partial x_1$ | $x_1$ ; $w_1$ |
+
+---
+
+# 4. Actualización de Pesos — Descenso por Gradiente
+
+## 4.1 Regla de actualización
+
+Una vez calculado el gradiente, los pesos se actualizan en la **dirección opuesta** al gradiente (para bajar la función de costo):
+
+$$w_{\text{nuevo}} = w_{\text{actual}} - k \cdot \frac{\partial C}{\partial w}$$
+
+$$b_{\text{nuevo}} = b_{\text{actual}} - k \cdot \frac{\partial C}{\partial b}$$
+
+Donde $k$ es la **tasa de aprendizaje** (*learning rate*), que controla el tamaño del paso.
+
+> ⚠️ **Importante:** Los gradientes se promedian sobre todos los ejemplos de entrenamiento antes de actualizar:
+> $$\Delta w_i = \frac{1}{N}\sum_{j=1}^{N} \delta w_i^{(j)}$$
+
+---
+
+# 5. Implementación en Python
+
+## 5.1 Configuración inicial
+
+```{python}
+import numpy as np
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import warnings
+warnings.filterwarnings('ignore')
+
+# ── Semilla para reproducibilidad ─────────────────────────────────────────────
+np.random.seed(42)
+
+# ── Datos: compuerta AND ───────────────────────────────────────────────────────
+X = np.array([[0, 0],
+              [0, 1],
+              [1, 0],
+              [1, 1]], dtype=float)
+
+y = np.array([0, 0, 0, 1], dtype=float)
+
+print("Tabla de entrenamiento (AND gate):")
+print("x1  x2  |  y")
+print("-" * 14)
+for xi, yi in zip(X, y):
+    print(f" {int(xi[0])}   {int(xi[1])}  |  {int(yi)}")
+```
+
+## 5.2 Funciones de la red neuronal
+
+```{python}
+def sigmoid(z):
+    """Función de activación sigmoide."""
+    return 1.0 / (1.0 + np.exp(-z))
+
+def sigmoid_deriv(z):
+    """Derivada de la sigmoide: σ'(z) = σ(z)·(1−σ(z))."""
+    s = sigmoid(z)
+    return s * (1.0 - s)
+
+def forward_pass(X, b, w1, w2):
+    """
+    Paso hacia adelante (forward pass).
+    Retorna z (pre-activación) y a (activación).
+    """
+    z = b + w1 * X[:, 0] + w2 * X[:, 1]
+    a = sigmoid(z)
+    return z, a
+
+def compute_cost(a, y):
+    """Costo total: suma de errores cuadráticos."""
+    return np.sum((a - y) ** 2)
+
+def compute_gradients(X, y, z, a):
+    """
+    Calcula los gradientes para b, w1 y w2.
+    Retorna el promedio sobre todos los ejemplos.
+    """
+    N = len(y)
+    dC_da = 2 * (a - y)           # ∂C/∂a
+    da_dz = sigmoid_deriv(z)      # ∂a/∂z
+
+    delta = dC_da * da_dz         # término común
+
+    grad_b  = np.mean(delta * 1)         # ∂C/∂b  (∂z/∂b = 1)
+    grad_w1 = np.mean(delta * X[:, 0])   # ∂C/∂w1 (∂z/∂w1 = x1)
+    grad_w2 = np.mean(delta * X[:, 1])   # ∂C/∂w2 (∂z/∂w2 = x2)
+
+    return grad_b, grad_w1, grad_w2
+
+print("✅ Funciones definidas correctamente")
+print(f"   sigmoid(0)   = {sigmoid(0):.4f}  (debe ser 0.5)")
+print(f"   sigmoid'(0)  = {sigmoid_deriv(0):.4f}  (debe ser 0.25)")
+```
+
+## 5.3 Bucle de entrenamiento
+
+```{python}
+# ── Parámetros iniciales (igual que en las imágenes) ──────────────────────────
+b_init,  w1_init,  w2_init  = 1.0, -2.0, 3.0
+learning_rate = 10
+n_steps = 50
+
+# ── Entrenamiento ─────────────────────────────────────────────────────────────
+b, w1, w2 = b_init, w1_init, w2_init
+
+history = []   # guardamos el estado en cada paso
+
+for step in range(n_steps + 1):
+    # 1. Forward pass
+    z, a = forward_pass(X, b, w1, w2)
+    cost = compute_cost(a, y)
+
+    # 2. Guardar estado
+    history.append({
+        'step'    : step,
+        'b'       : b,
+        'w1'      : w1,
+        'w2'      : w2,
+        'cost'    : cost,
+        'outputs' : a.copy(),
+    })
+
+    if step == n_steps:
+        break   # no actualizar en el último paso
+
+    # 3. Backward pass — gradientes
+    grad_b, grad_w1, grad_w2 = compute_gradients(X, y, z, a)
+
+    # 4. Actualización de pesos
+    b  -= learning_rate * grad_b
+    w1 -= learning_rate * grad_w1
+    w2 -= learning_rate * grad_w2
+
+# ── Mostrar resumen ───────────────────────────────────────────────────────────
+print(f"{'Paso':>5} | {'b':>8} | {'w1':>8} | {'w2':>8} | {'Costo':>8}")
+print("-" * 50)
+for h in history[:16]:  # mostrar primeros 16 pasos
+    print(f"{h['step']:>5} | {h['b']:>8.3f} | {h['w1']:>8.3f} | {h['w2']:>8.3f} | {h['cost']:>8.4f}")
+
+print(f"\n{'...' :>5}")
+final = history[-1]
+print(f"\n📌 Pesos finales (paso {final['step']}):")
+print(f"   b  = {final['b']:.4f}")
+print(f"   w1 = {final['w1']:.4f}")
+print(f"   w2 = {final['w2']:.4f}")
+print(f"   Costo final = {final['cost']:.6f}")
+```
+
+## 5.4 Verificación de las predicciones finales
+
+```{python}
+print("\n🔍 Predicciones de la red entrenada:\n")
+print(f"{'x1':>4} {'x2':>4} | {'y real':>8} | {'ŷ (prob)':>10} | {'ŷ (clase)':>10} | {'✓/✗':>5}")
+print("-" * 55)
+
+b_f, w1_f, w2_f = final['b'], final['w1'], final['w2']
+_, a_final = forward_pass(X, b_f, w1_f, w2_f)
+
+for i, (xi, yi) in enumerate(zip(X, y)):
+    pred_prob  = a_final[i]
+    pred_class = int(pred_prob >= 0.5)
+    correct    = "✅" if pred_class == int(yi) else "❌"
+    print(f"{int(xi[0]):>4} {int(xi[1]):>4} | {int(yi):>8} | {pred_prob:>10.4f} | {pred_class:>10} | {correct:>5}")
+```
+
+---
+
+# 6. Visualización del Proceso de Aprendizaje
+
+## 6.1 Evolución del costo
+
+```{python}
+costs = [h['cost'] for h in history]
+steps = [h['step'] for h in history]
+
+fig_cost = go.Figure()
+
+fig_cost.add_trace(go.Scatter(
+    x=steps, y=costs,
+    mode='lines+markers',
+    line=dict(color='#E74C3C', width=2.5),
+    marker=dict(size=5, color='#C0392B'),
+    name='Costo total',
+    hovertemplate='Paso %{x}<br>Costo: %{y:.4f}<extra></extra>'
+))
+
+fig_cost.update_layout(
+    title=dict(text='📉 Evolución del Costo durante el Entrenamiento', font_size=16),
+    xaxis_title='Paso (iteración)',
+    yaxis_title='Costo C',
+    template='plotly_white',
+    height=400,
+    showlegend=True,
+    annotations=[
+        dict(x=0, y=costs[0], text=f'Inicio: {costs[0]:.3f}',
+             showarrow=True, arrowhead=2, ax=40, ay=-30,
+             font=dict(color='#E74C3C', size=12)),
+        dict(x=steps[-1], y=costs[-1], text=f'Final: {costs[-1]:.4f}',
+             showarrow=True, arrowhead=2, ax=-40, ay=-30,
+             font=dict(color='#27AE60', size=12)),
+    ]
+)
+
+fig_cost.show()
+```
+
+## 6.2 Trayectoria de los pesos en el espacio 3D
+
+```{python}
+w1_hist = [h['w1'] for h in history]
+w2_hist = [h['w2'] for h in history]
+b_hist  = [h['b']  for h in history]
+
+fig_3d = go.Figure()
+
+# Trayectoria de los pesos
+fig_3d.add_trace(go.Scatter3d(
+    x=w1_hist, y=w2_hist, z=costs,
+    mode='lines+markers',
+    line=dict(color=costs, colorscale='Viridis', width=5),
+    marker=dict(
+        size=4,
+        color=costs,
+        colorscale='Viridis',
+        showscale=True,
+        colorbar=dict(title='Costo'),
+    ),
+    name='Trayectoria',
+    hovertemplate='w1=%{x:.3f}<br>w2=%{y:.3f}<br>Costo=%{z:.4f}<extra></extra>'
+))
+
+# Punto inicial
+fig_3d.add_trace(go.Scatter3d(
+    x=[w1_hist[0]], y=[w2_hist[0]], z=[costs[0]],
+    mode='markers+text',
+    marker=dict(size=10, color='red', symbol='circle'),
+    text=['Inicio'],
+    textposition='top center',
+    name='Inicio'
+))
+
+# Punto final
+fig_3d.add_trace(go.Scatter3d(
+    x=[w1_hist[-1]], y=[w2_hist[-1]], z=[costs[-1]],
+    mode='markers+text',
+    marker=dict(size=10, color='green', symbol='diamond'),
+    text=['Final'],
+    textposition='top center',
+    name='Final'
+))
+
+fig_3d.update_layout(
+    title=dict(text='🏔️ Trayectoria de los Pesos en el Espacio de la Función de Costo',
+               font_size=15),
+    scene=dict(
+        xaxis_title='w₁',
+        yaxis_title='w₂',
+        zaxis_title='Costo C',
+        camera=dict(eye=dict(x=1.5, y=1.5, z=1.2))
+    ),
+    height=550,
+    template='plotly_white'
+)
+
+fig_3d.show()
+```
+
+## 6.3 Mapa de contorno de la función de costo (w1 vs w2)
+
+```{python}
+# Calcular la superficie de costo sobre una malla de w1, w2
+# (manteniendo b fijo en su valor final para la visualización)
+b_fixed = np.mean(b_hist)
+
+w1_range = np.linspace(-4, 5, 120)
+w2_range = np.linspace(-1, 5, 120)
+W1_grid, W2_grid = np.meshgrid(w1_range, w2_range)
+
+C_grid = np.zeros_like(W1_grid)
+for i in range(W1_grid.shape[0]):
+    for j in range(W1_grid.shape[1]):
+        _, a_tmp = forward_pass(X, b_fixed, W1_grid[i, j], W2_grid[i, j])
+        C_grid[i, j] = compute_cost(a_tmp, y)
+
+fig_contour = go.Figure()
+
+# Mapa de contorno
+fig_contour.add_trace(go.Contour(
+    x=w1_range, y=w2_range, z=C_grid,
+    colorscale='RdYlGn_r',
+    contours=dict(
+        showlabels=True,
+        labelfont=dict(size=10, color='black')
+    ),
+    colorbar=dict(title='Costo'),
+    name='Superficie de costo',
+    hovertemplate='w1=%{x:.2f}<br>w2=%{y:.2f}<br>Costo=%{z:.4f}<extra></extra>'
+))
+
+# Trayectoria de los pesos
+fig_contour.add_trace(go.Scatter(
+    x=w1_hist, y=w2_hist,
+    mode='lines+markers',
+    line=dict(color='white', width=2),
+    marker=dict(
+        size=6,
+        color=list(range(len(w1_hist))),
+        colorscale='Blues',
+        showscale=False,
+    ),
+    name='Trayectoria de pesos',
+    hovertemplate='Paso %{text}<br>w1=%{x:.3f}<br>w2=%{y:.3f}<extra></extra>',
+    text=[str(h['step']) for h in history]
+))
+
+# Inicio y fin
+fig_contour.add_trace(go.Scatter(
+    x=[w1_hist[0]], y=[w2_hist[0]],
+    mode='markers+text',
+    marker=dict(size=14, color='red', symbol='star'),
+    text=['Inicio'], textposition='top right',
+    name='Inicio', textfont=dict(color='white', size=12)
+))
+fig_contour.add_trace(go.Scatter(
+    x=[w1_hist[-1]], y=[w2_hist[-1]],
+    mode='markers+text',
+    marker=dict(size=14, color='lime', symbol='star'),
+    text=['Mínimo'], textposition='top right',
+    name='Mínimo encontrado', textfont=dict(color='white', size=12)
+))
+
+# Flechas de gradiente (cada 5 pasos)
+for idx in range(0, len(history)-1, 5):
+    h = history[idx]
+    z_tmp, a_tmp = forward_pass(X, h['b'], h['w1'], h['w2'])
+    _, gw1, gw2 = compute_gradients(X, y, z_tmp, a_tmp)
+    scale = 0.4
+    fig_contour.add_annotation(
+        x=h['w1'] - scale * gw1,
+        y=h['w2'] - scale * gw2,
+        ax=h['w1'], ay=h['w2'],
+        xref='x', yref='y', axref='x', ayref='y',
+        showarrow=True, arrowhead=3,
+        arrowsize=1.2, arrowwidth=1.5,
+        arrowcolor='cyan'
+    )
+
+fig_contour.update_layout(
+    title=dict(
+        text='🗺️ Mapa de Contorno del Costo y Trayectoria del Descenso por Gradiente',
+        font_size=15
+    ),
+    xaxis_title='w₁ (Peso 1)',
+    yaxis_title='w₂ (Peso 2)',
+    template='plotly_dark',
+    height=600,
+    legend=dict(
+        bgcolor='rgba(0,0,0,0.5)',
+        font=dict(color='white')
+    )
+)
+
+fig_contour.show()
+```
+
+## 6.4 Paso a paso interactivo (detalle de cada iteración)
+
+```{python}
+# Tabla detallada de los primeros 16 pasos (como en las imágenes)
+print("╔══════╦══════════╦══════════╦══════════╦══════════╗")
+print("║ Paso ║    b     ║   w₁     ║   w₂     ║  Costo   ║")
+print("╠══════╬══════════╬══════════╬══════════╬══════════╣")
+for h in history[:17]:
+    print(f"║ {h['step']:>4} ║ {h['b']:>8.3f} ║ {h['w1']:>8.3f} ║ {h['w2']:>8.3f} ║ {h['cost']:>8.4f} ║")
+print("╚══════╩══════════╩══════════╩══════════╩══════════╝")
+```
+
+## 6.5 Evolución de los pesos individuales
+
+```{python}
+fig_weights = make_subplots(
+    rows=1, cols=3,
+    subplot_titles=('Sesgo b', 'Peso w₁', 'Peso w₂'),
+    shared_yaxes=False
+)
+
+colors = ['#9B59B6', '#3498DB', '#E67E22']
+params = [b_hist, w1_hist, w2_hist]
+labels = ['b', 'w₁', 'w₂']
+
+for col, (param, label, color) in enumerate(zip(params, labels, colors), 1):
+    fig_weights.add_trace(
+        go.Scatter(
+            x=steps, y=param,
+            mode='lines+markers',
+            name=label,
+            line=dict(color=color, width=2),
+            marker=dict(size=4),
+            hovertemplate=f'Paso %{{x}}<br>{label}=%{{y:.4f}}<extra></extra>'
+        ),
+        row=1, col=col
+    )
+    # Línea del valor final
+    fig_weights.add_hline(
+        y=param[-1], line_dash='dash',
+        line_color=color, opacity=0.5,
+        row=1, col=col
+    )
+
+fig_weights.update_layout(
+    title=dict(text='⚙️ Evolución de los Parámetros durante el Entrenamiento', font_size=15),
+    template='plotly_white',
+    height=380,
+    showlegend=False
+)
+fig_weights.update_yaxes(title_text='Valor')
+fig_weights.update_xaxes(title_text='Paso')
+
+fig_weights.show()
+```
+
+## 6.6 Superficie de activación aprendida
+
+```{python}
+# Visualizar qué aprendió la red: la función que mapea (x1,x2) → ŷ
+x_grid = np.linspace(-0.1, 1.1, 80)
+y_grid = np.linspace(-0.1, 1.1, 80)
+X1g, X2g = np.meshgrid(x_grid, y_grid)
+
+X_flat = np.column_stack([X1g.ravel(), X2g.ravel()])
+_, A_flat = forward_pass(X_flat, b_f, w1_f, w2_f)
+A_grid = A_flat.reshape(X1g.shape)
+
+fig_surface = go.Figure()
+
+fig_surface.add_trace(go.Surface(
+    x=x_grid, y=y_grid, z=A_grid,
+    colorscale='Blues',
+    opacity=0.85,
+    name='Función aprendida',
+    showscale=True,
+    colorbar=dict(title='ŷ (probabilidad)')
+))
+
+# Puntos de entrenamiento
+colors_pts = ['red' if yi == 0 else 'lime' for yi in y]
+for i, (xi, yi) in enumerate(zip(X, y)):
+    fig_surface.add_trace(go.Scatter3d(
+        x=[xi[0]], y=[xi[1]], z=[float(yi)],
+        mode='markers+text',
+        marker=dict(size=8, color=colors_pts[i],
+                    symbol='circle', line=dict(color='black', width=1)),
+        text=[f'({int(xi[0])},{int(xi[1])})→{int(yi)}'],
+        textposition='top center',
+        showlegend=False
+    ))
+
+fig_surface.update_layout(
+    title=dict(text='🧠 Función Aprendida por la Red Neuronal (AND Gate)', font_size=15),
+    scene=dict(
+        xaxis_title='x₁',
+        yaxis_title='x₂',
+        zaxis_title='ŷ (salida)',
+        camera=dict(eye=dict(x=1.6, y=-1.6, z=1.2))
+    ),
+    height=550,
+    template='plotly_white'
+)
+
+fig_surface.show()
+```
+
+---
+
+# 7. Flujo de Entrenamiento Completo
+
+```{mermaid}
+flowchart TD
+    A([🚀 Inicializar pesos\nb, w₁, w₂ aleatorios]) --> B
+
+    B[/"📥 Tomar todos los\nejemplos de entrenamiento"/]
+    B --> C
+
+    C["⚡ Forward Pass\nz = b + w₁x₁ + w₂x₂\nā = σ(z)"]
+    C --> D
+
+    D["📊 Calcular Costo\nC = Σ(a − y)²"]
+    D --> E{¿C ≤ umbral?}
+
+    E -- Sí --> Z([✅ Red entrenada])
+
+    E -- No --> F
+
+    F["🔙 Backward Pass\n∂C/∂a = 2(a−y)\n∂a/∂z = σ'(z)"]
+    F --> G
+
+    G["📐 Calcular Gradientes\n∂C/∂b, ∂C/∂w₁, ∂C/∂w₂"]
+    G --> H
+
+    H["🔄 Actualizar Pesos\nw ← w − k·∂C/∂w\nb ← b − k·∂C/∂b"]
+    H --> B
+
+    style A fill:#27AE60,color:white
+    style Z fill:#27AE60,color:white
+    style C fill:#3498DB,color:white
+    style D fill:#E74C3C,color:white
+    style F fill:#E67E22,color:white
+    style G fill:#9B59B6,color:white
+    style H fill:#1ABC9C,color:white
+```
+
+---
+
+# 8. Resumen Conceptual
+
+## ¿Cómo aprende una red neuronal?
+
+El proceso de aprendizaje sigue este ciclo:
+
+1. **Inicialización**: Los pesos se inicializan (aleatoriamente o con valores específicos).
+
+2. **Propagación hacia adelante** (*forward pass*): Para cada ejemplo de entrenamiento, calculamos la predicción de la red usando los pesos actuales.
+
+3. **Cálculo del error**: Medimos qué tan lejos están las predicciones de los valores reales usando la función de costo.
+
+4. **Propagación hacia atrás** (*backpropagation*): Calculamos el gradiente del costo respecto a cada peso usando la regla de la cadena.
+
+5. **Actualización**: Ajustamos los pesos moviéndonos en la dirección opuesta al gradiente (cuesta abajo en la superficie de error).
+
+6. **Repetición**: Repetimos los pasos 2-5 hasta que el error sea suficientemente pequeño.
+
+## Analogía geográfica
+
+Imagina que estás en una montaña con niebla (no puedes ver el valle):
+- Tu **posición** = valores actuales de los pesos
+- Tu **altitud** = valor del costo
+- El **gradiente** = la pendiente bajo tus pies
+- El **Descenso por Gradiente** = dar pasos pequeños cuesta abajo
+
+Con suficientes pasos, llegarás al valle (mínimo del costo).
+
+```{python}
+# ── Resumen final ─────────────────────────────────────────────────────────────
+print("=" * 55)
+print("  RESUMEN DEL ENTRENAMIENTO")
+print("=" * 55)
+print(f"  Problema          : Compuerta AND (2 entradas)")
+print(f"  Activación        : Sigmoide σ(z)")
+print(f"  Función de pérdida: Error Cuadrático")
+print(f"  Tasa de aprendizaje: {learning_rate}")
+print(f"  Pasos de entrenamiento: {n_steps}")
+print("-" * 55)
+print(f"  Costo inicial     : {costs[0]:.4f}")
+print(f"  Costo final       : {costs[-1]:.6f}")
+print(f"  Reducción         : {(1 - costs[-1]/costs[0])*100:.1f}%")
+print("-" * 55)
+print(f"  Parámetros finales:")
+print(f"    b  = {final['b']:>8.4f}")
+print(f"    w₁ = {final['w1']:>8.4f}")
+print(f"    w₂ = {final['w2']:>8.4f}")
+print("=" * 55)
+```
+
+
+
+# 9. Diferenciación automática y grafos con bifurcaciones
+
+## 9.0 La retropropagación como caso particular de la diferenciación automática
+
+Resulta que la retropropagación es un caso particular de una técnica general del análisis numérico llamada **diferenciación automática** (*automatic differentiation*). Podemos pensar en la diferenciación automática como un conjunto de técnicas para evaluar numéricamente (a diferencia de simbólicamente) el gradiente exacto (con precisión de máquina) de una función, trabajando con variables intermedias y aplicando la regla de la cadena.
+
+La diferenciación automática descompone la función en una serie de **operaciones aritméticas elementales** — suma, multiplicación, y funciones como $\exp$, $\sin$, $\cos$, $\log$ — y aplica la regla de la cadena a cada una. De esta forma, el gradiente de funciones bastante complicadas puede calcularse de manera automática.
+
+> **Nota:** La diferenciación automática es distinta de la diferenciación simbólica (como la que hace un sistema de álgebra computacional) y también de las aproximaciones numéricas del gradiente mediante diferencias finitas. La diferenciación automática calcula el gradiente **exacto** con un costo computacional comparable al de evaluar la función misma.
+
+### Modo directo y modo inverso
+
+Consideremos un grafo simple que representa el flujo de datos desde las entradas $x$ hasta la salida $y$, pasando por variables intermedias $a$ y $b$. Si quisiéramos calcular la derivada $\mathrm{d}y/\mathrm{d}x$, aplicaríamos la regla de la cadena:
+
+$$\frac{\mathrm{d}y}{\mathrm{d}x} = \frac{\mathrm{d}y}{\mathrm{d}b} \cdot \frac{\mathrm{d}b}{\mathrm{d}a} \cdot \frac{\mathrm{d}a}{\mathrm{d}x}$$
+
+Intuitivamente, el modo directo y el modo inverso difieren en el **orden de multiplicación**. Dado que la multiplicación de matrices es asociativa, podemos elegir entre:
+
+**Modo inverso** (*reverse mode*) — los gradientes se propagan **hacia atrás** en el grafo, desde la salida hacia las entradas:
+$$\frac{\mathrm{d}y}{\mathrm{d}x} = \left(\frac{\mathrm{d}y}{\mathrm{d}b} \cdot \frac{\mathrm{d}b}{\mathrm{d}a}\right) \cdot \frac{\mathrm{d}a}{\mathrm{d}x}$$
+
+**Modo directo** (*forward mode*) — los gradientes fluyen **hacia adelante**, en la misma dirección que los datos:
+$$\frac{\mathrm{d}y}{\mathrm{d}x} = \frac{\mathrm{d}y}{\mathrm{d}b} \cdot \left(\frac{\mathrm{d}b}{\mathrm{d}a} \cdot \frac{\mathrm{d}a}{\mathrm{d}x}\right)$$
+
+La **retropropagación** que usamos en redes neuronales es exactamente el **modo inverso** de la diferenciación automática: comenzamos con $\partial C/\partial C = 1$ en la salida y propagamos los gradientes hacia atrás, nodo por nodo, hasta llegar a los pesos.
+
+> **¿Por qué el modo inverso?** Cuando hay muchas entradas (pesos) y una sola salida (el costo $C$), el modo inverso es mucho más eficiente: calcula **todos** los gradientes $\partial C/\partial w_i$ en una sola pasada hacia atrás. El modo directo necesitaría una pasada por cada peso.
+
+---
+
+## 9.1 Ejemplo: grafo computacional con bifurcaciones
+
+En nuestra red neuronal simple (Sección 3), el grafo computacional era una **cadena lineal**: cada nodo alimenta exactamente al siguiente. Pero en funciones más complejas — y en redes neuronales reales — los grafos **se bifurcan**: una misma variable intermedia puede alimentar varias operaciones a la vez. Esto cambia la forma en que se calculan los gradientes durante la retropropagación.
+
+Para comprender este patrón, trabajaremos un ejemplo tomado de Deisenroth *et al.* (2020, Ejemplo 5.14).
+
+### La función y sus variables intermedias
+
+Consideremos la función:
+
+$$f(x) = \sqrt{x^2 + \exp(x^2)} + \cos\!\left(x^2 + \exp(x^2)\right)$$
+
+Calcular $\partial f / \partial x$ directamente sobre esta expresión sería largo y propenso a errores. La idea clave es que **si implementáramos $f$ en un computador**, no evaluaríamos toda la expresión de golpe, sino que guardaríamos resultados parciales en **variables intermedias**:
+
+$$a = x^2, \qquad b = \exp(a), \qquad c = a + b, \qquad d = \sqrt{c}, \qquad e = \cos(c), \qquad f = d + e$$
+
+Cada variable almacena el resultado de una sola operación elemental ($(\cdot)^2$, $\exp$, $+$, $\sqrt{\cdot}$, $\cos$). Esto es exactamente lo que hacen las librerías de redes neuronales como PyTorch o TensorFlow internamente.
+
+### El grafo computacional (Forward Pass)
+
+El conjunto de ecuaciones anteriores se puede representar como un **grafo computacional** (@fig-ejemplo-514): los **nodos naranjas** son variables (valores que se almacenan) y los **nodos azules** son operaciones (funciones elementales). Las **flechas sólidas** muestran el flujo de datos de izquierda a derecha — el *forward pass*.
+
+```{python}
+#| label: fig-ejemplo-514
+#| fig-cap: "Grafo computacional del Ejemplo 5.14 (Deisenroth *et al.*, 2020): las flechas sólidas representan el forward pass y las flechas rojas discontinuas el backward pass (retropropagación)."
+#| echo: false
+
+import subprocess, tempfile, os
+from IPython.display import Image, display
+
+tikz_code = r"""
+\documentclass[tikz,border=14pt]{standalone}
+\usetikzlibrary{positioning,shapes.geometric,fit,shapes,arrows.meta,calc,backgrounds}
+\usepackage{amsmath}
+
+\begin{document}
+\begin{tikzpicture}[
+    scale=1.8, transform shape,
+    >=LaTeX,
+    var/.style={
+        circle,
+        minimum width=2.5em,
+        draw=orange!60!black,
+        fill=orange!20,
+        thick,
+        font=\large
+    },
+    op/.style={
+        rectangle,
+        rounded corners=4pt,
+        minimum width=2.6em,
+        minimum height=1.9em,
+        draw=blue!50!black,
+        fill=blue!12,
+        thick,
+        font=\large
+    },
+    arrow/.style={-{Latex[length=3.5mm, width=2.5mm]}, thick, black!80},
+    backprop/.style={-{Latex[length=3.5mm, width=2.5mm]}, dashed, red!70!black, thick},
+    bplabel/.style={font=\footnotesize, text=red!70!black, fill=white,
+                    inner sep=1.5pt, rounded corners=1pt},
+    fwlabel/.style={font=\small, black}
+]
+
+% Fila central
+\node[var] (x)       at (0,      0)    {$x$};
+\node[op]  (op_sq)   at (2.2,    0)    {$(\cdot)^2$};
+\node[var] (a)       at (4.4,    0)    {$a$};
+\node[op]  (op_add1) at (9.6,    0)    {$+$};
+\node[var] (c)       at (11.8,   0)    {$c$};
+\node[op]  (op_add2) at (17.0,   0)    {$+$};
+\node[var] (f)       at (19.2,   0)    {$f$};
+
+% Rama superior izquierda: exp y b
+\node[op]  (op_exp)  at (6.0,    2.4)  {$\exp(\cdot)$};
+\node[var] (b)       at (8.2,    2.4)  {$b$};
+
+% Rama superior derecha: sqrt y d
+\node[op]  (op_sqrt) at (13.8,   2.2)  {$\sqrt{\cdot}$};
+\node[var] (d)       at (16.0,   2.2)  {$d$};
+
+% Rama inferior derecha: cos y e
+\node[op]  (op_cos)  at (13.8,  -2.2)  {$\cos(\cdot)$};
+\node[var] (e)       at (16.0,  -2.2)  {$e$};
+
+% === FORWARD PASS ===
+\draw[arrow] (x.east) -- (op_sq.west);
+\draw[arrow] (op_sq.east) -- (a.west)
+    node[midway, above, fwlabel] {$a{=}x^2$};
+
+\draw[arrow] (a.north) to[out=80, in=200] (op_exp.south west);
+\draw[arrow] (op_exp.east) -- (b.west)
+    node[midway, above, yshift=5pt, fwlabel] {$b{=}\exp(a)$};
+
+\draw[arrow] (a.east) -- (op_add1.west);
+\draw[arrow] (b.south east) to[out=-20, in=100] (op_add1.north);
+
+\draw[arrow] (op_add1.east) -- (c.west)
+    node[midway, above, fwlabel] {$c{=}a{+}b$};
+
+\draw[arrow] (c.north) to[out=60, in=180] (op_sqrt.west);
+\draw[arrow] (op_sqrt.east) -- (d.west)
+    node[midway, above, fwlabel] {$d{=}\sqrt{c}$};
+
+\draw[arrow] (c.south) to[out=-60, in=180] (op_cos.west);
+\draw[arrow] (op_cos.east) -- (e.west)
+    node[midway, below, yshift=-5pt, fwlabel] {$e{=}\cos(c)$};
+
+\draw[arrow] (d.east) to[out=0, in=90] (op_add2.north);
+\draw[arrow] (e.east) to[out=0, in=-90] (op_add2.south);
+\draw[arrow] (op_add2.east) -- (f.west)
+    node[midway, above, fwlabel] {$f{=}d{+}e$};
+
+% === BACKPROPAGATION ===
+\draw[backprop] (op_add2.north west) to[out=150, in=0]
+    node[bplabel, above=3pt, xshift=-6pt, yshift=-5pt, pos=0.5]
+    {$\partial f / \partial d = 1$}
+    (d.east);
+
+\draw[backprop] (op_add2.south west) to[out=-150, in=0]
+    node[bplabel, below=3pt, xshift=-6pt, yshift=5pt, pos=0.5]
+    {$\partial f / \partial e = 1$}
+    (e.east);
+
+\draw[backprop] (op_sqrt.south) to[out=-120, in=30]
+    node[bplabel, right=2pt, pos=0.4, xshift=-12pt]
+    {$(\partial f/\partial d)\cdot\frac{1}{2\sqrt{c}}$}
+    (c.north east);
+
+\draw[backprop] (op_cos.north) to[out=120, in=-30]
+    node[bplabel, right=2pt, pos=0.4, xshift=-12pt]
+    {$(\partial f/\partial e)\cdot(-\sin c)$}
+    (c.south east);
+
+\draw[backprop] (op_add1.north west) to[out=120, in=-20]
+    node[bplabel, above=2pt, pos=0.55]
+    {$\partial f/\partial b = \partial f/\partial c$}
+    (b.south);
+
+\draw[backprop] ([yshift=-4pt]op_add1.south west) -- ([yshift=-4pt]a.south east)
+    node[bplabel, below=3pt, pos=0.5]
+    {vía $+$: $\partial f/\partial c \cdot 1$};
+
+\draw[backprop] (op_exp.south) to[out=-100, in=100]
+    node[bplabel, left=3pt, pos=0.5]
+    {vía $\exp$: $(\partial f/\partial b)\cdot\exp(a)$}
+    (a.north);
+
+\draw[backprop] ([yshift=-4pt]op_sq.south west) -- ([yshift=-4pt]x.south east)
+    node[bplabel, below=3pt, pos=0.5]
+    {$\partial f/\partial x = (\partial f/\partial a)\cdot 2x$};
+
+% === ANOTACIONES ===
+\node[font=\footnotesize, text=red!70!black, align=center,
+      fill=red!5, draw=red!30, rounded corners=3pt, inner sep=4pt]
+    at (5.8, -2.8)
+    {$\displaystyle\frac{\partial f}{\partial a}
+      = \underbrace{\frac{\partial f}{\partial b}\cdot\exp(a)}_{\text{vía }\exp}
+      + \underbrace{\frac{\partial f}{\partial c}\cdot 1}_{\text{vía }+}$};
+
+\node[font=\footnotesize, text=red!70!black, align=center,
+      fill=red!5, draw=red!30, rounded corners=3pt, inner sep=4pt]
+    at (12.5, -3.8)
+    {$\displaystyle\frac{\partial f}{\partial c}
+      = \underbrace{\frac{\partial f}{\partial d}\cdot\frac{1}{2\sqrt{c}}}_{\text{vía }\sqrt{\cdot}}
+      + \underbrace{\frac{\partial f}{\partial e}\cdot(-\sin c)}_{\text{vía }\cos}$};
+
+\end{tikzpicture}
+\end{document}
+"""
+
+# Compilar TikZ → PDF → PNG
+with tempfile.TemporaryDirectory() as tmpdir:
+    tex_path = os.path.join(tmpdir, "grafo.tex")
+    pdf_path = os.path.join(tmpdir, "grafo.pdf")
+    png_path = "ejemplo_514.png"
+
+    with open(tex_path, "w") as f:
+        f.write(tikz_code)
+
+    subprocess.run(
+        ["pdflatex", "-interaction=nonstopmode", "-output-directory", tmpdir, tex_path],
+        capture_output=True, check=True
+    )
+    subprocess.run(
+        ["pdftoppm", "-png", "-r", "400", "-singlefile", pdf_path,
+         os.path.join(tmpdir, "grafo_out")],
+        capture_output=True, check=True
+    )
+
+    # Copiar al directorio del proyecto y mostrar
+    import shutil
+    shutil.copy(os.path.join(tmpdir, "grafo_out.png"), png_path)
+
+display(Image(filename="ejemplo_514.png", width=900))
+```
+
+Observa dos características importantes del grafo:
+
+1. **Bifurcación en $a$:** la variable $a$ alimenta dos operaciones distintas — $\exp(\cdot)$ (rama superior) y $+$ (directamente). Esto refleja que $a = x^2$ aparece en **dos lugares** de la expresión original.
+
+2. **Bifurcación en $c$:** la variable $c$ también se divide en dos ramas — $\sqrt{\cdot}$ (hacia $d$) y $\cos(\cdot)$ (hacia $e$) — que luego se reúnen en la suma final $f = d + e$.
+
+### Derivadas locales de cada nodo
+
+Antes de retropropagar, necesitamos las derivadas de cada operación elemental respecto a su entrada directa. Son las derivadas que aprendemos en cálculo básico:
+
+| Ecuación | Derivada local | Valor |
+|:---:|:---:|:---:|
+| $a = x^2$ | $\partial a / \partial x$ | $2x$ |
+| $b = \exp(a)$ | $\partial b / \partial a$ | $\exp(a)$ |
+| $c = a + b$ | $\partial c / \partial a = \partial c / \partial b$ | $1$ |
+| $d = \sqrt{c}$ | $\partial d / \partial c$ | $\frac{1}{2\sqrt{c}}$ |
+| $e = \cos(c)$ | $\partial e / \partial c$ | $-\sin(c)$ |
+| $f = d + e$ | $\partial f / \partial d = \partial f / \partial e$ | $1$ |
+
+> **Observación:** Cada derivada local es muy sencilla. La potencia del grafo computacional es que **nunca necesitamos derivar la función completa** — solo combinamos estas piezas simples.
+
+### Retropropagación paso a paso (Backward Pass)
+
+Ahora recorremos el grafo **de derecha a izquierda** (flechas rojas discontinuas en @fig-ejemplo-514), aplicando la regla de la cadena en cada nodo.
+
+**Paso 1 — Nodo $f$ (la salida):**
+
+Comenzamos con la derivada de $f$ respecto a sí misma:
+$$\frac{\partial f}{\partial f} = 1$$
+
+**Paso 2 — Nodo $+$ final ($f = d + e$):**
+
+Como la suma tiene derivada $1$ respecto a cada sumando, el gradiente se **copia** idéntico a ambas ramas:
+$$\frac{\partial f}{\partial d} = 1, \qquad \frac{\partial f}{\partial e} = 1$$
+
+**Paso 3 — Nodo $\sqrt{\cdot}$ ($d = \sqrt{c}$):**
+
+Aplicamos la regla de la cadena a lo largo de la rama superior. Multiplicamos el gradiente que llega ($\partial f / \partial d = 1$) por la derivada local:
+$$\frac{\partial f}{\partial c}\bigg|_{\text{vía }\sqrt{\cdot}} = \frac{\partial f}{\partial d} \cdot \frac{\partial d}{\partial c} = 1 \cdot \frac{1}{2\sqrt{c}}$$
+
+**Paso 4 — Nodo $\cos(\cdot)$ ($e = \cos(c)$):**
+
+Lo mismo por la rama inferior:
+$$\frac{\partial f}{\partial c}\bigg|_{\text{vía }\cos} = \frac{\partial f}{\partial e} \cdot \frac{\partial e}{\partial c} = 1 \cdot (-\sin c)$$
+
+**Paso 5 — Combinación en $c$ (primera bifurcación):**
+
+El nodo $c$ influye en $f$ por **dos caminos** (vía $\sqrt{\cdot}$ y vía $\cos$). Su gradiente total es la **suma** de ambas contribuciones:
+
+$$\boxed{\frac{\partial f}{\partial c} = \frac{1}{2\sqrt{c}} + (-\sin c) = \frac{1}{2\sqrt{c}} - \sin(c)}$$
+
+> **¿Por qué se suman?** Si mueves $c$ un poquito, el efecto se propaga por los dos caminos *simultáneamente*. El efecto total es la suma de ambos efectos parciales. Esto es la **derivada total** del cálculo multivariable.
+
+**Paso 6 — Nodo $+$ ($c = a + b$):**
+
+De nuevo, la suma copia el gradiente a ambas entradas:
+$$\frac{\partial f}{\partial b} = \frac{\partial f}{\partial c} \cdot \frac{\partial c}{\partial b} = \frac{\partial f}{\partial c} \cdot 1 = \frac{\partial f}{\partial c}$$
+
+**Paso 7 — Nodo $\exp(\cdot)$ ($b = \exp(a)$):**
+
+$$\frac{\partial f}{\partial a}\bigg|_{\text{vía }\exp} = \frac{\partial f}{\partial b} \cdot \frac{\partial b}{\partial a} = \frac{\partial f}{\partial c} \cdot \exp(a)$$
+
+**Paso 8 — Combinación en $a$ (segunda bifurcación):**
+
+El nodo $a$ también alimenta dos caminos: uno a través de $\exp(\cdot)$ y otro directamente al $+$. Sumamos:
+
+$$\boxed{\frac{\partial f}{\partial a} = \underbrace{\frac{\partial f}{\partial b}\cdot\exp(a)}_{\text{vía }\exp} + \underbrace{\frac{\partial f}{\partial c}\cdot 1}_{\text{vía }+}}$$
+
+**Paso 9 — Nodo $(\cdot)^2$ ($a = x^2$):**
+
+Finalmente, multiplicamos por la derivada local $2x$:
+
+$$\boxed{\frac{\partial f}{\partial x} = \frac{\partial f}{\partial a} \cdot 2x}$$
+
+### La eficiencia del grafo computacional
+
+Un resultado notable es que **el cómputo de la derivada tiene un costo similar al cómputo de la función misma**. Esto es sorprendente porque la expresión analítica de $\partial f / \partial x$ (si la expandiéramos completamente) es mucho más larga que la de $f(x)$.
+
+El truco es que nunca expandimos la derivada completa. En lugar de eso, tratamos cada $\partial f / \partial a$, $\partial f / \partial c$, etc. como una **variable numérica** que calculamos y reutilizamos. Esto es exactamente lo que hace el algoritmo de retropropagación:
+
+1. **Forward pass:** calcula y almacena cada variable intermedia ($a, b, c, d, e, f$).
+2. **Backward pass:** recorre el grafo al revés, calculando un gradiente por nodo, reutilizando los valores almacenados.
+
+### Resumen: las dos reglas del grafo
+
+| Situación en el grafo | Qué hacer con los gradientes | Ejemplo en este grafo |
+|:---:|---|---|
+| **Un camino** (A → op → B) | **Multiplicar** por la derivada local | $\partial f/\partial x = (\partial f/\partial a) \cdot 2x$ |
+| **Bifurcación** (A → B y A → C) | **Sumar** las contribuciones de cada camino | $\partial f/\partial c = \frac{1}{2\sqrt{c}} - \sin(c)$ |
+
+> **Conexión con nuestra red neuronal:** En la Sección 3, el grafo era una cadena sin bifurcaciones, así que solo necesitábamos multiplicar. En este ejemplo, los nodos $a$ y $c$ se bifurcan, y por eso aparecen sumas. En redes neuronales con múltiples capas y conexiones residuales (como ResNet), las bifurcaciones son muy frecuentes, y esta misma regla se aplica en cada una.
+
+---
+
+# Referencias y Lecturas Adicionales
+
+- Nielsen, M. A. (2015). *Neural Networks and Deep Learning*. Determination Press.
+- Goodfellow, I., Bengio, Y., & Courville, A. (2016). *Deep Learning*. MIT Press.
+- Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning representations by back-propagating errors. *Nature*, 323, 533–536.
+- Deisenroth, M. P., Faisal, A. A., & Ong, C. S. (2020). *Mathematics for Machine Learning*. Cambridge University Press.
+
+---
+
+*Documento generado con [Quarto](https://quarto.org) · Código Python · Visualizaciones Plotly*
